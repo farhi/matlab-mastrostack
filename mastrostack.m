@@ -34,9 +34,9 @@ classdef mastrostack < handle
     
     % the actual image matrix are not stored (except when given as such)
     % as we expect to handle 100's of images.
-    dark    = 0;  % stored as an uint16
-    flat    = 0;  % stored as a double
-    light   = 0;  % stored as a uint16
+    dark    = 0;  % stored as a double in [0-1]
+    flat    = 0;  % stored as a double in [0-1]
+    light   = 0;  % stored as a double in [0-1]
     lightN  = 0;  % stored as a uint16
   end % properties
   
@@ -86,7 +86,7 @@ classdef mastrostack < handle
         % read new image, or retrieve it
         [this_im, this_img] = imread_single(src{index}, self.images, flag);
         
-        if isempty(this_img) continue; end  % invalid image
+        if isempty(this_im) continue; end  % invalid image
         
         % store if this is a new image
         if isnan(found(index))
@@ -173,47 +173,71 @@ classdef mastrostack < handle
       
     end % label
     
-        
-    function img = get.dark(self)
-      % dark: compute the mean Dark frame, using labelled images
-      sumDarks = 0;
-      nbDarks  = 0;
-      for index=1:mumel(self.images)
-        this = self.images(index);
-        if ~strcmp(img.type, 'dark')
-          continue;
-        end
-        [img, im] = imread(self, index);  % read image (re-read if needed)
-      end
-    end
-    
     % compute stuff ============================================================
+    
+    function im = getdark(self)
+      % getdark: compute the mean Dark frame, using labelled images
+      
+      if isempty(self.dark)
+        sumDarks = 0;
+        nbDarks  = 0;
+        for index=1:mumel(self.images)
+          img = self.images(index);
+          if ~strcmp(img.type, 'dark'), continue; end
+          % read image (re-read if needed), convert to double [0-1]
+          sumDarks  = sumDarks+ imdouble(imread(self, index));
+          nbDarks   = nbDarks + 1;
+        end
+        self.dark = sumDarks/nbDarks;
+      end
+      im = self.dark;
+      
+    end % getdark
+    
+    function im = getflat(self)
+      % getflat: compute the mean Flat frame, using labelled images
+      
+      if isempty(self.flat)
+        sumFlats = 0;
+        nbFlats  = 0;
+        for index=1:mumel(self.images)
+          img = self.images(index);
+          if ~strcmp(img.type, 'flat'), continue; end
+          % read image (re-read if needed), convert to double [0-1]
+          sumFlats  = sumFlats+ imdouble(rgb2gray(imread(self, index)));
+          nbFlats   = nbFlats + 1;
+        end
+        self.flat = sumFlats/nbFlats;
+      end
+      im = self.flat;
+      
+    end % getflat
 
-    function im = flat(self, im)
-      % flat: correct an image for vigneting and background
+    function im = correct(self, im, cl)
+      % correct: correct an image for vigneting and background
       if nargin < 2, return; end
+      if nargin < 3
+        cl = class(im); % we shall then cast back
+      end
+      
+      if isempty(im), return; end
+      im = imdouble(im);
       
       % correct for read-out/sensor noise (subtract)
       if ~isempty(self.dark)
-        % must cast the dark to the image.
-        if strcmp('uint8', class(im))
-          dark = self.dark/255;
-        else
-          dark = self.dark;
-        end
-        im = im - dark;
+        im = im - self.dark; % dark is a double
       end
       
       % correct for flat field to compensate vigneting (divide)
       if ~isempty(self.flat)
         for l=1:size(im,3)
-          layer = double(im(:,:,l));
-          layer = layer./flat;
-          im(:,:,l) = cast(layer, class(im));
+          im(:,:,l) = im(:,:,l)./flat;
         end
       end
       
-    end
+      im = im2uint(im, cl);
+      
+    end % correct
     
     
     function [points, img] = cpselect(self, img, im)
@@ -226,6 +250,9 @@ classdef mastrostack < handle
       %   Up to self.nbControlPoints are selected, ensuring that all of these are
       %   separated with at least self.toleranceTranslation*10 in % of image size.
       
+      if nargin < 2
+        img = 1:numel(self.images);
+      end
       if nargin < 3
         % get the images (only the meta info). We shall read images 1-by-1
         [im, img] = imread(self, img, 0); % do not re-read image
@@ -235,10 +262,8 @@ classdef mastrostack < handle
       if numel(img) == 1
         % search control points for a single image
         if isempty(img.points)
-          [im, ~]   = imread(self, img);
-          im        = rgb2gray(im);
-          
-          
+          im        = rgb2gray(imread(self, img));
+
           N         = self.nbControlPoints;
           tol_trans = self.toleranceTranslation;
           
@@ -262,7 +287,7 @@ classdef mastrostack < handle
       
     end % cpselect
     
-    function [ret_t, theta] = diff(self, img1, img2)
+    function [ret_t, ret_R, theta] = diff(self, img1, img2)
       % diff: compute the difference between img2 and img1 used as reference.
       %
       %   [ret_t, theta] = diff(self, img1, img2)
@@ -270,18 +295,21 @@ classdef mastrostack < handle
       %   [ret_t, theta] = diff(self, img2)
       %     use the reference 'light' image as img1.
       
-      ret_t=[]; theta=[];
+      ret_t=[]; ret_R = []; theta=[];
       if nargin < 3
         if self.reference && self.reference < numel(self.images)
           img2 = img1;
           img1 = self.images(self.reference);
-        else return; end
+        else 
+          disp([ mfilename ': WARNING: reference not defined to treat ' img1.id  ]); 
+        end
       elseif nargin < 2
         return
       end
       % get image and reference
       [~, img1] = imread(self, img1, 0);
       [~, img2] = imread(self, img2, 0);
+      if isempty(img1) || isempty(img2), return; end
       
       % here we need img1 and img2. Make sure we have control points
       cpselect(self, img1);
@@ -333,6 +361,7 @@ classdef mastrostack < handle
       [ret_R, ret_t] = rigid_transform_3D([x2 ; y2]', [x1 ; y1]');
       if isempty(ret_R)
         disp([ mfilename ': WARNING: invalid affine transformation. Skipping.'])
+        ret_t = [];
         return
       end
       % compute an estimate of the translation and rotation from the identified
@@ -342,6 +371,7 @@ classdef mastrostack < handle
       theta = asind(ret_R(1,2));
       if abs(theta-(theta2-theta1)) > tol_rot/3
         disp([ mfilename ': WARNING: invalid affine rotation. Skipping.']);
+        ret_t = [];
         return
       end
   
@@ -352,33 +382,47 @@ classdef mastrostack < handle
       self.images(img2.index) = img2;
     end % diff
     
-    function stack(self, img)
+    function im = stack(self, img)
       % stack: stack all images on the reference
       
       if nargin == 1
         img = 1:numel(self.images);
       end
       
+      % compute dark and flat (if not done yet)
+      getdark(self);
+      getflat(self);
+      
       % get the images (only the meta info). We shall read images 1-by-1
       [~, img] = imread(self, img, 0); % do not re-read image
-      
-      [im,M] = imaffine(im, ret_R, ret_t);
-      self.lightN=M0+M;
-      clear M
-      self.light = self.light + uint16(im); % add rotated/translated image on the reference
       
       for index=1:numel(img)
         this_img = img(index);
         if strcmp('light', this_img.type)
           % stack light images
-          [im, ~] = imread(self, img); % we read the image
-          [im,M] = imaffine(im, ret_R, ret_t);
+          im = correct(imread(self, this_img)); % read the image, the class is not changed
+          if isempty(im), continue; end
+          
+          % get control points
+          points = cpselect(self, img, im);
+          if isempty(points), continue; end
+          
+          % compute the affine transformation wrt reference (using control points)
+          [ret_t, ret_R] = diff(self, this_img);
+          if isempty (ret_t), continue; end
+          
+          % we read the image and transform it
+          
+          [im,M]  = imaffine(imdouble(im), ret_R, ret_t);
           self.lightN=M0+M;
           clear M
-          self.light = self.light + uint16(im); % add rotated/translated image on the reference
- 
+          self.light = self.light + im; % add rotated/translated image on the reference
+          clear im
         end
       end
+      
+      self.light= im2uint(self.light ./ self.lightN, 'uint16');
+      im = self.light;
     end % stack
     
     % plotting stuff ===========================================================

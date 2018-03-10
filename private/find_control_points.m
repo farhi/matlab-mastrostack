@@ -1,5 +1,9 @@
 function points = find_control_points(im, N, tol_trans)
   % find_control_points: find N points separated with tol_trans*10 pixels
+  
+  points = [];
+  if isempty(im), return; end
+  
   points.x  = zeros(1, N);
   points.y  = zeros(1, N);
   points.m  = zeros(1, N);

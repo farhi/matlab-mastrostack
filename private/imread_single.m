@@ -29,7 +29,7 @@ function [im, img, exif] = imread_single(source, images, flag)
         im = imread(img.source);
       end
     end
-  elseif isnumeric(source)
+  elseif isnumeric(source) && ~isempty(source)
     exif     = [];
     im       = source;
   else
@@ -37,8 +37,6 @@ function [im, img, exif] = imread_single(source, images, flag)
     return
   end
 
-  
-  
   if isempty(im) return; end
 
   % create fake exif if not set
