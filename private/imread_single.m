@@ -14,26 +14,31 @@ function [im, img, exif] = imread_single(source, images, flag)
     try
       exif     = imfinfo(source);
       im       = imread(source);
+      disp([ mfilename ': Reading ' source ]);
     catch ME
       disp([ mfilename ': Skipping ' source ]);
       return
     end
-  elseif isnumeric(source) && isscalar(source)
-    % source is an image index
-    if numel(images) >= source
+  elseif (isnumeric(source) || isstruct(source)) && isscalar(source)
+    % source is an image index or struct
+    if isnumeric(source) && source && numel(images) >= source
       img    = images(source);
       source = img.source;
-      
-      % make sure we can get the image (matrix), when img was retrieved but not image
-      if flag && ischar(img.source)
-        im = imread(img.source);
-      end
+    elseif isstruct(source)
+      img    = source;
+      source = img.source;
+    else img = [] ; end
+    % make sure we can get the image (matrix), when img was retrieved but not image
+    if ~isempty(img) && flag && ischar(img.source)
+      im = imread(img.source);
+      disp([ mfilename ': Reading ' img.source ]);
     end
   elseif isnumeric(source) && ~isempty(source)
     exif     = [];
     im       = source;
   else
-    disp([ mfilename ': argument should be char or matrix. Is ' class(source) ])
+    error([ mfilename ': argument should be char or matrix. Is ' class(source) ])
+    source
     return
   end
 
