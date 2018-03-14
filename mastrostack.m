@@ -78,7 +78,6 @@ classdef mastrostack < handle
       % first check if image(s) are already loaded
       [found, src] = exist(self, source);
       if ~iscell(src), src = { src }; end
-      
       img   = []; im = {};
       
       for index=1:numel(found)
@@ -86,7 +85,7 @@ classdef mastrostack < handle
         % read new image, or retrieve it
         [this_im, this_img] = imread_single(src{index}, self.images, flag);
         
-        if isempty(this_im) continue; end  % invalid image
+        if isempty(this_img) continue; end  % invalid image
         
         % store if this is a new image
         if isnan(found(index))
@@ -126,10 +125,16 @@ classdef mastrostack < handle
       %
       %   found = exist(self, source)
       %     returns the index of any matching image, or nan (not found)
-      
+
       % handle array of images
       found = []; src = {};
-      if iscell(source) || (isnumeric(source) && ~isscalar(source) ...
+      if ischar(source)
+        source = resolvefiles(source);
+      end
+      if iscellstr(source) && numel(source) == 1
+        source = source{1}; 
+      end
+      if (iscell(source) && numel(source) > 1) || (isnumeric(source) && ~isscalar(source) ...
         && numel(source) == max(size(source)))
         for index=1:numel(source)
           if iscell(source), this=source{index};
@@ -138,7 +143,7 @@ classdef mastrostack < handle
         end
         return
       end
-
+      
       found = nan; src = source;
       if isnumeric(source) && isscalar(source) && source <= numel(self.images)
         found = source;
@@ -170,6 +175,18 @@ classdef mastrostack < handle
       
       % we can sort intensity or sharpness
       % and show a listdlg to select, or select auto on threshold
+      
+      % sharpness can be sorted into 2 clusters [ dark+flat , light ]
+      im = [ self.images.sharpness ];
+      im = FastCMeans(uint16(im/max(im)*2^16), 2);
+      is_light = (im == 2);
+      
+      % intensity can be sorted into 3 clusters [ dark, light, flat ]
+      im = [ self.images.image_sum ];
+      im = FastCMeans(uint16(im/max(im)*2^16), 3);
+      is_dark = (im == 1);
+      is_flat = (im == 3);
+      is_light= (im == 2);  % must match previous guess
       
     end % label
     
@@ -398,9 +415,9 @@ classdef mastrostack < handle
       
       for index=1:numel(img)
         this_img = img(index);
-        if strcmp('light', this_img.type)
+        if isempty(this_img.type) || strcmp('light', this_img.type)
           % stack light images
-          im = correct(imread(self, this_img)); % read the image, the class is not changed
+          im = correct(imread(self, this_img)); % read and correct image
           if isempty(im), continue; end
           
           % get control points
@@ -433,7 +450,7 @@ classdef mastrostack < handle
       %   plot(self, img): display specified image. img can be filename, RGB image
       %     image structure or index.
       
-      if nargin == 1
+      if nargin == 1 || isempty(img)
         img = 1:numel(self.images);
       end
       
@@ -453,16 +470,17 @@ classdef mastrostack < handle
       for index=1:numel(img)
         % use a grid to display images
         subplot(m,n,index);
-        [im, ~] = imread(self, img); % we read the image and plot it
-        if isempty(im), im=img.thumbnail; end
+        % [im, ~] = imread(self, img(index), 0);
+        % if isempty(im), im=img(index).thumbnail; end
+        im=img(index).thumbnail;
         h = [ h image(im) ];
-        set(gca,'XTick',[], 'YTick',[]); title(img.id);
+        set(gca,'XTick',[], 'YTick',[]); title(img(index).id);
 
         % we add the control points, scaled to the thumbnail/image
-        if ~isempty(img.points)
+        if ~isempty(img(index).points)
           hold on
-          x = img.points.x*size(im,1)/img.image_size(1);
-          y = img.points.y*size(im,2)/img.image_size(2);
+          x = img(index).points.x*size(im,1)/img(index).image_size(1);
+          y = img(index).points.y*size(im,2)/img(index).image_size(2);
           scatter(y,x,'o','g');
           hold off
         end
