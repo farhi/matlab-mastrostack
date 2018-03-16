@@ -95,6 +95,8 @@ classdef mastrostack < handle
           else 
             self.images(this_img.index) = this_img; 
           end
+        else % update
+          self.images(this_img.index) = this_img; 
         end
 
         % add to return arguments
@@ -170,23 +172,47 @@ classdef mastrostack < handle
       
     end % exist
     
-    function label(self, img, lab)
+    function img = label(self, img, lab)
       % label: sort images into categories
       
-      % we can sort intensity or sharpness
-      % and show a listdlg to select, or select auto on threshold
+      if nargin == 1
+        % automatic sorting on all images
+        img = self.images;
+      else
+        [~, img] = imread(self, img, 0); % do not re-read image
+      end
       
-      % sharpness can be sorted into 2 clusters [ dark+flat , light ]
-      im = [ self.images.sharpness ];
-      im = FastCMeans(uint16(im/max(im)*2^16), 2);
-      is_light = (im == 2);
-      
-      % intensity can be sorted into 3 clusters [ dark, light, flat ]
-      im = [ self.images.image_sum ];
-      im = FastCMeans(uint16(im/max(im)*2^16), 3);
-      is_dark = (im == 1);
-      is_flat = (im == 3);
-      is_light= (im == 2);  % must match previous guess
+      if nargin < 3 % automatic sorting
+        % sharpness can be sorted into 2 clusters [ dark+flat , light ]
+        im = [ img.sharpness ];
+        im = FastCMeans(uint16(im/max(im)*2^16), 2);
+        is_light1 = (im == 2);
+        
+        % intensity can be sorted into 3 clusters [ dark, light, flat ]
+        im = [ img.image_sum ];
+        im = FastCMeans(uint16(im/max(im)*2^16), 3);
+        is_dark = (im == 1);
+        is_flat = (im == 3);
+        is_light= (im == 2);  % must match previous guess
+        
+        flag=true;  % flag for first light image
+        for index=find(is_light1 & is_light)
+          img(index).type = 'light';
+          if flag, self.reference = img(index).index; end
+        end
+        for index=find(is_dark)
+          img(index).type = 'dark';
+        end
+        for index=find(is_flat)
+          img(index).type = 'flat';
+        end
+      elseif ischar(lab) % set label
+        for index=1:numel(img)
+          img(index).type = lab;
+        end
+      end
+      % update images in object
+      [~, img] = imread(self, img, 0);
       
     end % label
     
@@ -404,6 +430,7 @@ classdef mastrostack < handle
       
       if nargin == 1
         img = 1:numel(self.images);
+        label(self);
       end
       
       % compute dark and flat (if not done yet)
@@ -534,21 +561,5 @@ classdef mastrostack < handle
   
 end % mastrostack
 
-% ------------------------------------------------------------------------------
-
-
-
-
-
-
-
-
-
-
-
-
-
-  
-  
-
+% -----------------------------------------------------------------------------
 
