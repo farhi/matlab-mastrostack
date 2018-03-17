@@ -37,7 +37,7 @@ function [im, img, exif] = imread_single(source, images, flag)
     exif     = [];
     im       = source;
   else
-    error([ mfilename ': argument should be char or matrix. Is ' class(source) ])
+    error([ mfilename ': argument should be char or matrix. Is ' class(source) ' [' num2str(numel(source)) ']' ])
     source
     return
   end
@@ -66,7 +66,7 @@ function [im, img, exif] = imread_single(source, images, flag)
   img.index       = numel(images)+1;
   [~,img.id]      = fileparts(exif.Filename);
   img.source      = source;
-  img.image       = im;
+  img.image       = []; % we do not store the images. Many will be huge.
   img.image_size  = size(im);
   img.image_sum   = sum(double(im(:)));
   img.exif        = exif;

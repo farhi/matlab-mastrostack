@@ -1,5 +1,10 @@
 function [x1,y1,x2,y2, p1_orig,p2_orig, p1_axis,p2_axis] = analyse_dist_angles(points1, points2, tol_trans, tol_rot)
 
+  if ~isstruct(points1) || ~isstruct(points2)
+    x1=[]; y1=[]; x2=[]; y2=[]; 
+    p1_orig=0; p2_orig=0; 
+    p1_axis=0; p2_axis=0;
+  end
   % there is a global translation, and a minor rotation which brings some of
   % the current image back onto some of the previous one.
   x2 = points2.x; x1=points1.x;

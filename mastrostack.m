@@ -43,7 +43,7 @@ classdef mastrostack < handle
   methods
   
     % I/O stuff ================================================================
-    function ar = mastrostack
+    function ar = mastrostack(source)
 
       % load catalogs: objects, stars
       disp([ mfilename ': Welcome ! Loading Catalogs:' ]);
@@ -62,6 +62,10 @@ classdef mastrostack < handle
         end
       end
       
+      if nargin % import images
+        imread(ar, source, 0);
+      end
+      
     end % mastrostack
     
     function [im, img] = imread(self, source, flag)
@@ -77,13 +81,17 @@ classdef mastrostack < handle
       
       % first check if image(s) are already loaded
       [found, src] = exist(self, source);
-      if ~iscell(src), src = { src }; end
+      if ~iscell(src) && ~isstruct(src), src = { src }; end
       img   = []; im = {};
-      
+
       for index=1:numel(found)
       
         % read new image, or retrieve it
-        [this_im, this_img] = imread_single(src{index}, self.images, flag);
+        if isstruct(src)
+          [this_im, this_img] = imread_single(src(index), self.images, flag);
+        else
+          [this_im, this_img] = imread_single(src{index}, self.images, flag);
+        end
         
         if isempty(this_img) continue; end  % invalid image
         
@@ -102,7 +110,7 @@ classdef mastrostack < handle
         % add to return arguments
         if isempty(img), img        = this_img;
         else             img(end+1) = this_img; end
-        im{end+1} = this_im;
+        if flag, im{end+1} = this_im; end
       end % for
       
       if iscell(im) && numel(im) == 1
@@ -137,7 +145,7 @@ classdef mastrostack < handle
         source = source{1}; 
       end
       if (iscell(source) && numel(source) > 1) || (isnumeric(source) && ~isscalar(source) ...
-        && numel(source) == max(size(source)))
+        && numel(source) == max(size(source))) || (isstruct(source) && numel(source) > 1)
         for index=1:numel(source)
           if iscell(source), this=source{index};
           else this=source(index); end
@@ -145,7 +153,7 @@ classdef mastrostack < handle
         end
         return
       end
-      
+
       found = nan; src = source;
       if isnumeric(source) && isscalar(source) && source <= numel(self.images)
         found = source;
@@ -166,6 +174,12 @@ classdef mastrostack < handle
               found = index;
               break; 
             end
+          elseif isstruct(source)
+            if any(strcmp(this.source, { source.source })) ...
+            || any(strcmp(this.id, { source.id }))
+              found = index;
+              break; 
+            end
           end
         end % for
       end
@@ -174,8 +188,10 @@ classdef mastrostack < handle
     
     function img = label(self, img, lab)
       % label: sort images into categories
+      %
+      % to clear all labels, use label(self, [], '')
       
-      if nargin == 1
+      if nargin == 1 || isempty(img)
         % automatic sorting on all images
         img = self.images;
       else
@@ -185,26 +201,27 @@ classdef mastrostack < handle
       if nargin < 3 % automatic sorting
         % sharpness can be sorted into 2 clusters [ dark+flat , light ]
         im = [ img.sharpness ];
-        im = FastCMeans(uint16(im/max(im)*2^16), 2);
-        is_light1 = (im == 2);
+        im1 = FastCMeans(uint16(im/max(im)*2^16), 2);
+        is_light1 = (im1 == 2) & (im > 2);
+        is_darkflat=(im1 == 1) & (im < 2);
         
         % intensity can be sorted into 3 clusters [ dark, light, flat ]
         im = [ img.image_sum ];
-        im = FastCMeans(uint16(im/max(im)*2^16), 3);
-        is_dark = (im == 1);
-        is_flat = (im == 3);
-        is_light= (im == 2);  % must match previous guess
-        
-        flag=true;  % flag for first light image
+        im1 = FastCMeans(uint16(im/max(im)*2^16), 3);
+        is_dark = (im1 == 1);
+        is_flat = (im1 == 3);
+        is_light= (im1 == 2);  % must match previous guess
+
         for index=find(is_light1 & is_light)
-          img(index).type = 'light';
-          if flag, self.reference = img(index).index; end
+          if isempty(img(index).type) img(index).type = 'light'; end
+          % first light image will be the reference when not set
+          if ~self.reference, self.reference = img(index).index; end
         end
         for index=find(is_dark)
-          img(index).type = 'dark';
+          if isempty(img(index).type) img(index).type = 'dark'; end
         end
         for index=find(is_flat)
-          img(index).type = 'flat';
+          if isempty(img(index).type) img(index).type = 'flat'; end
         end
       elseif ischar(lab) % set label
         for index=1:numel(img)
@@ -221,17 +238,21 @@ classdef mastrostack < handle
     function im = getdark(self)
       % getdark: compute the mean Dark frame, using labelled images
       
-      if isempty(self.dark)
+      if any(~isfinite(self.dark)), self.dark=0; end
+      if isempty(self.dark) || isscalar(self.dark)
         sumDarks = 0;
         nbDarks  = 0;
-        for index=1:mumel(self.images)
+        for index=1:numel(self.images)
           img = self.images(index);
           if ~strcmp(img.type, 'dark'), continue; end
           % read image (re-read if needed), convert to double [0-1]
           sumDarks  = sumDarks+ imdouble(imread(self, index));
           nbDarks   = nbDarks + 1;
         end
-        self.dark = sumDarks/nbDarks;
+        if nbDarks>0
+          self.dark = sumDarks/nbDarks;
+        else self.dark=0;
+        end
       end
       im = self.dark;
       
@@ -240,17 +261,22 @@ classdef mastrostack < handle
     function im = getflat(self)
       % getflat: compute the mean Flat frame, using labelled images
       
-      if isempty(self.flat)
+      if any(~isfinite(self.flat)), self.flat=0; end
+      if isempty(self.flat) || isscalar(self.flat)
         sumFlats = 0;
         nbFlats  = 0;
-        for index=1:mumel(self.images)
+        for index=1:numel(self.images)
           img = self.images(index);
           if ~strcmp(img.type, 'flat'), continue; end
           % read image (re-read if needed), convert to double [0-1]
           sumFlats  = sumFlats+ imdouble(rgb2gray(imread(self, index)));
           nbFlats   = nbFlats + 1;
         end
-        self.flat = sumFlats/nbFlats;
+        if nbFlats>0
+          self.flat = sumFlats/nbFlats;
+          index= ~isfinite(self.flat) | self.flat <= 0;
+          self.flat(index) = 1;
+        else self.flat=0; end
       end
       im = self.flat;
       
@@ -267,14 +293,14 @@ classdef mastrostack < handle
       im = imdouble(im);
       
       % correct for read-out/sensor noise (subtract)
-      if ~isempty(self.dark)
+      if ~isempty(self.dark) && ~isscalar(self.dark)
         im = im - self.dark; % dark is a double
       end
       
       % correct for flat field to compensate vigneting (divide)
-      if ~isempty(self.flat)
+      if ~isempty(self.flat) && ~isscalar(self.flat)
         for l=1:size(im,3)
-          im(:,:,l) = im(:,:,l)./flat;
+          im(:,:,l) = im(:,:,l)./self.flat;
         end
       end
       
@@ -312,7 +338,7 @@ classdef mastrostack < handle
           
           % search points=(x,y,m,sx,sy) and store
           img.points             = find_control_points(im, N, tol_trans*10);
-          if numel(self.image) <= 1, self.images = img;
+          if numel(self.images) <= 1, self.images = img;
           else self.images(img.index) = img; end
         end
         points = img.points;
@@ -429,26 +455,28 @@ classdef mastrostack < handle
       % stack: stack all images on the reference
       
       if nargin == 1
-        img = 1:numel(self.images);
-        label(self);
+        img = self.images;
+      else
+        % get the images (only the meta info). We shall read images 1-by-1
+        [~, img] = imread(self, img, 0); % do not re-read image
       end
       
       % compute dark and flat (if not done yet)
+      label(self);
       getdark(self);
       getflat(self);
-      
-      % get the images (only the meta info). We shall read images 1-by-1
-      [~, img] = imread(self, img, 0); % do not re-read image
+      self.light = 0.0;
+      self.lightN= uint8(0);
       
       for index=1:numel(img)
         this_img = img(index);
         if isempty(this_img.type) || strcmp('light', this_img.type)
           % stack light images
-          im = correct(imread(self, this_img)); % read and correct image
+          im = correct(self, imread(self, this_img)); % read and correct image
           if isempty(im), continue; end
           
           % get control points
-          points = cpselect(self, img, im);
+          points = cpselect(self, this_img, im);
           if isempty(points), continue; end
           
           % compute the affine transformation wrt reference (using control points)
@@ -456,16 +484,15 @@ classdef mastrostack < handle
           if isempty (ret_t), continue; end
           
           % we read the image and transform it
-          
           [im,M]  = imaffine(imdouble(im), ret_R, ret_t);
-          self.lightN=M0+M;
+          self.lightN=self.lightN+M;
           clear M
           self.light = self.light + im; % add rotated/translated image on the reference
           clear im
         end
       end
       
-      self.light= im2uint(self.light ./ self.lightN, 'uint16');
+      self.light= im2uint(self.light ./ double(self.lightN), 'uint16');
       im = self.light;
     end % stack
     
