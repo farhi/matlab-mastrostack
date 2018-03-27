@@ -8,7 +8,12 @@ function [im, img, exif] = imread_single(source, images, flag)
   if nargin < 3, flag=1; end
 
   im = []; img = []; exif = [];
+  if iscellstr(source), source = char(source); end
+  if isempty(source), return; end
   % new image
+  if ischar(source) && strncmp(source,'file://',7)
+    source = source(8:end);
+  end
   if ischar(source) && exist(source, 'file')
     % check if image exists
     try
@@ -30,15 +35,19 @@ function [im, img, exif] = imread_single(source, images, flag)
     else img = [] ; end
     % make sure we can get the image (matrix), when img was retrieved but not image
     if ~isempty(img) && flag && ischar(img.source)
-      im = imread(img.source);
       disp([ mfilename ': Reading ' img.source ]);
+      im = imread(img.source);
+      return
     end
   elseif isnumeric(source) && ~isempty(source)
     exif     = [];
     im       = source;
   else
+    if ischar(source) || isscalar(source)
+      source
+    end
     error([ mfilename ': argument should be char or matrix. Is ' class(source) ' [' num2str(numel(source)) ']' ])
-    source
+    
     return
   end
 
@@ -46,7 +55,11 @@ function [im, img, exif] = imread_single(source, images, flag)
 
   % create fake exif if not set
   if isempty(exif)
-    exif.Filename     = sprintf('Image_%d', numel(images)+1);
+    if ischar(source)
+      exif.Filename     = source;
+    else
+      exif.Filename     = sprintf('Image_%d', numel(images)+1);
+    end
     exif.FileModDate  = datestr(now);
     exif.FileSize     = numel(im);
     exif.Format       = 'jpg';
@@ -62,6 +75,10 @@ function [im, img, exif] = imread_single(source, images, flag)
     end
   end
   
+  if isfield(exif, 'DigitalCamera') && isfield(exif.DigitalCamera, 'ExposureTime')
+    exif.ExposureTime = exif.DigitalCamera.ExposureTime;
+  end
+  
   % create the img structure holding information and EXIF
   img.index       = numel(images)+1;
   [~,img.id]      = fileparts(exif.Filename);
@@ -71,7 +88,8 @@ function [im, img, exif] = imread_single(source, images, flag)
   img.image_sum   = sum(double(im(:)));
   img.exif        = exif;
   img.thumbnail   = im;
-  img.sharpness   = image_sharpness(im);
+  img.sharpness   = 0;
+  img.width       = 0;
   
   if numel(img.thumbnail) > 1e6
     ratio         = ceil(sqrt(numel(img.thumbnail)/1e6));
@@ -80,17 +98,7 @@ function [im, img, exif] = imread_single(source, images, flag)
     
   % these will be set later
   img.type        = [];
-  img.points      = [];
-  img.rotation    = [];
-  img.translation = [];
-  img.angle       = [];
-  img.scaling     = [];
-  img.reference   = [];
-  img.ra          = [];
-  img.dec         = [];
-  img.focal_length= [];
-  img.sensor_width= [];
-  img.sensor_height=[];
-  img.exposureTime =[];
+  img.points      = struct('x',[],'y',[],'handle',[],'m',[], ...
+    'sx',[],'sy',[], 'sharpness', []);
   
 end % imread_single

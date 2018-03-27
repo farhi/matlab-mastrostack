@@ -41,6 +41,9 @@ function a = resolvefiles(a, t)
       new_a = {};
       for index=1:numel(a)
         this = a{index};
+        if ischar(this) && strncmp(this,'file://',7)
+          this = this(8:end);
+        end
         if ischar(this)
           p    = fileparts(this);
           if isdir(this), p = this; end
