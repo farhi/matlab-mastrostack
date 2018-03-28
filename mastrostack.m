@@ -314,14 +314,18 @@ classdef mastrostack < handle
           'Callback', {@MenuCallback, self },'Accelerator','p');
         uimenu(m, 'Label', 'Goto image...',    ...
           'Callback', {@MenuCallback, self });
-          uimenu(m, 'Label', 'Clear image...',    ...
+          uimenu(m, 'Label', 'Clear image(s)...', 'Separator','on',    ...
           'Callback', {@MenuCallback, self });
         
         m = uimenu(fig, 'Label', 'Compute');
+        uimenu(m, 'Label', 'Set tolerances',        ...
+          'Callback', {@MenuCallback, self });
         uimenu(m, 'Label', 'Automatic control points',        ...
           'Callback', {@MenuCallback, self },'Accelerator','a');
         uimenu(m, 'Label', 'Clear all control points',        ...
           'Callback', {@MenuCallback, self },'Accelerator','c');
+        uimenu(m, 'Label', 'Show sharpness',        ...
+          'Callback', {@MenuCallback, self });
         uimenu(m, 'Label', 'Compute master Dark',        ...
           'Callback', {@MenuCallback, self });
         uimenu(m, 'Label', 'Compute master Flat',        ...
@@ -335,6 +339,34 @@ classdef mastrostack < handle
         set(fig, 'KeyPressFcn',   {@MenuCallback, self });       % will get its CurrentCharacter
         set(fig, 'WindowScrollWheelFcn',   {@ScrollWheelCallback, self });
         set(fig, 'UserData',self);
+        
+        t = {'\bf Welcome to {\color{magenta}Ma(e)stroStack} !', ...
+          ' ', ...
+          'This application allows to stack amateur astro-photography images', ...
+          ' ', ...
+          '1- import any {\color{blue}Dark} images (taken with the cap on the scope)', ...
+          '2- import the {\color{blue}Flat} images (taken viewing a uniform surface)', ...
+          '3- import the {\color{blue}Light} images (those showing stars and deep sky objects)', ...
+          '4- compute master Dark and Flat', ...
+          '5- select the {\color{red}Reference} image (on which all images will be added)', ...
+          '6- stack ! (the alignment will then be done at the same time)', ...
+          ' ', ...
+          'You can look at images to mark those to ignore/skip (e.g. blurred)', ...
+          'To use them back set their type to e.g. Light', ...
+          ' ', ...
+          '{\color{red}Use keys and menu items:}', ...
+          '  L: mark current image as Light',...
+          '  D: mark current image as Dark',...
+          '  F: mark current image as Flat',...
+          '  I: mark current image as Skip/Ignore',...
+          '  R: mark current image as Reference',...
+          '  N or ->: see next image', ...
+          '  P or <-: see previous image', ...
+          '  A: select automatically control points for alignment', ...
+          '  click: add a control point in the image for alignment', ...
+          ' ' };
+        t = text(0.1,0.5, t, 'Units','normalized');
+        
       else
         set(0, 'CurrentFigure',fig); % activate but no raise
       end
@@ -423,10 +455,6 @@ classdef mastrostack < handle
       
       for index=1:numel(self.images)
         this_img = self.images(index);
-        if ~ishandle(wb)
-          disp('Aborting (user closed the waitbar).')
-          break;
-        end
         
         if isempty(this_img.type) || strcmp('light', this_img.type)
           % check for the reference
@@ -473,13 +501,19 @@ classdef mastrostack < handle
           ending = addtodate(now, ceil(eta), 'second');
           ending = [ 'Ending ' datestr(ending) ];
           eta    = sprintf('ETA %i [s]. %s', round(eta), ending);
+          disp([ mfilename ': ' ...
+              num2str(index) '/' num2str(numel(self.images)) ': ' this_img.id '. ' eta]);
           
           % update waitbar and ETA display
-          waitbar(index/numel(self.images), wb, [ 'Stack: ' this_img.id ' (close to abort)...' ]);
-          
-          disp([ mfilename ': ' ...
-            num2str(index) '/' num2str(numel(self.images)) ': ' this_img.id '. ' eta]);
-          set(wb, 'Name', [ num2str(index) '/' num2str(numel(self.images)) ' ' ending ])
+          if ishandle(wb)
+            waitbar(index/numel(self.images), wb, [ 'Stack: ' this_img.id ' (close to abort)...' ]);
+            try;
+            set(wb, 'Name', [ num2str(index) '/' num2str(numel(self.images)) ' ' eta ]);
+            end
+          else
+            disp('Stack: Aborting (user closed the waitbar).')
+            break;
+          end
         end
       end % for
       disp([ mfilename ': Elapsed time ' num2str(etime(clock, t0)) ' [s]' ])
@@ -546,11 +580,11 @@ classdef mastrostack < handle
           liststring{end+1} = this.id;
         end
         % we add type sharpness
-        liststring{end} = [ liststring{end} ' ' upper(this.type) ...
+        liststring{end} = [ liststring{end} ' [' num2str(index) '] ' upper(this.type) ...
           ' sharp=' num2str(this.sharpness) ];
         if isfield(this.points,'sx') && ~isempty(this.points.sx) && ~isempty(this.points.sy)
           liststring{end} = [ liststring{end} ...
-          ' width=' num2str(sqrt(sum(this.points.sx.^2.*this.points.sy.^2))) ];
+          ' width=' num2str(this.width) ];
         end
       end
       if isempty(liststring), selection=[]; return; end
@@ -570,6 +604,7 @@ classdef mastrostack < handle
         set(wb, 'Tag', [ mfilename '_waitbar' ]);
       else wb = [];
       end
+      t0 = clock; 
       
       for index=1:numel(img)
         this_img = img(index);
@@ -583,10 +618,21 @@ classdef mastrostack < handle
         % update waitbar and ETA display
         if numel(img) > 1 && ~isempty(wb)
           if ~ishandle(wb)
-            disp('Aborting (user closed the waitbar).')
+            disp('Align: Aborting (user closed the waitbar).')
             break;
           end
+          % compute ETA
+          dt_from0     = etime(clock, t0);
+          dt_per_image = dt_from0/index;
+          % remaining images: numel(s)-index
+          eta    = dt_per_image*(numel(img)-index+1);
+          ending = addtodate(now, ceil(eta), 'second');
+          ending = [ 'Ending ' datestr(ending) ];
+          eta    = sprintf('ETA %i [s]. %s', round(eta), ending);
           waitbar(index/numel(img), wb, [ 'Align: ' this_img.id ' (close to abort)...' ]);
+          try
+          set(wb, 'Name', [ num2str(index) '/' num2str(numel(img)) ' ' eta ]);
+          end
         end
 
         this_img.points = ...
@@ -858,6 +904,28 @@ function MenuCallback(src, evnt, self)
     delete(self.dndcontrol);
     self.dndcontrol = [];
     delete(gcf);
+  case 'Show sharpness'
+    figure; plot([ self.images.sharpness ]./[ self.images.width ])
+    xlabel('Image index')
+    ylabel('Sharpness (higher is better)');
+    titme('Sharpness: identify low sharpness with the Marker tool, then mark them as Skip');
+  case 'Set tolerances'
+    prompt={'\bf {\color{blue}Translation} (0-1, e.g 0.01):','\bf {\color{blue}Rotation} [deg, e.g. 3]:'};
+    name=[ mfilename ': Tolerances' ];
+    numlines=1;
+    defaultanswer={ num2str(self.toleranceTranslation), ...
+                    num2str(self.toleranceRotation) };
+    options.Resize='on';
+    options.WindowStyle='normal';
+    options.Interpreter='tex';
+    answer=inputdlg(prompt,name,numlines,defaultanswer,options);
+    if isempty(answer), return; end
+    if isfinite(str2double(answer{1}))
+      self.toleranceTranslation = str2double(answer{1});
+    end
+    if isfinite(str2double(answer{2}))
+      self.toleranceRotation = str2double(answer{2});
+    end
   otherwise
     disp([ mfilename ': unknown action ' action ])
   end

@@ -1,4 +1,4 @@
-function [ret_t, ret_R, theta] = diff(self, img1, img2)
+function [ret_t, ret_R, theta] = imdiff(self, img1, img2)
       % diff: compute the difference between img2 and img1 used as reference.
       %
       %   [ret_t, theta] = diff(self, img1, img2)
