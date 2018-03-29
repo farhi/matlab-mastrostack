@@ -1,4 +1,62 @@
 classdef mastrostack < handle
+  % mastrostack: a class to automatically align and stack astro-photography images
+  %
+  %  After importing images (see below), the stacked image is computed, using the
+  %  dark and flat images for correction. All images are aligned on a reference, 
+  %  and added with sub-pixel resolution.
+  %
+  % Load images
+  % -----------
+  %   ma = mastrostack(images)
+  %     loads images without setting their type
+  %   ma = mastrostack(light, dark)
+  %   ma = mastrostack(light, dark, flat)
+  %     loads light, dark (background) and flat (scope response) images, and label them.
+  %
+  % The usual procedure
+  % -------------------
+  %  After imporing the files, you should label them using the Image/Mark as... 
+  %  menu items. Then define one of the images as the reference (R). You can navigate
+  %  within images with the Image/Goto menu item. 'Bad' images can be skipped (ignored).
+  %  To use them back, set their type to 'light'.
+  %  You should then compute the master Dark and Flat images (Compute menu).
+  %  
+  %  Then, use the Compute/Align item to compute the images control points (stars)
+  %  whch also corrects for background and scope response when dark and flat are defined.
+  %
+  %  We then advise to check the sharpness with the 'Compute/Show sharpness' which
+  %  metric is highest for clearer images, and low for blurred/moved ones. The axis
+  %  is the image index. To automatically select best images, use the menu item 
+  %  'Compute/Select on sharpness' and set a threshold. All images above (clean) 
+  %  will be selected, and those below will be marked as 'skip'.
+  %
+  %  When ready, use the Compute/Stack menu item. The final image is then shon 
+  %  and written to disk. Use e.g. Lightroom, RawTherapee, DarkTable to enhance
+  %  contrast.
+  %
+  %  If you have difficulties in stacking (some images do not have enough control
+  %  points), relax e.g. the translation tolerance, using the menu item 
+  %  'Compute/Set tolerances'.
+  %
+  % Methods
+  % -------
+  % about           display a dialg box
+  % correct         correct and image for dark (background) and flat (vigneting)
+  % cpselect        ALIGN images on reference
+  % diff            compute difference of an image with reference
+  % delete          delete the mastrostack, and clear memory
+  % exist           check if an image has already been loaded            
+  % getdark         compute the master Dark
+  % getflat         compute the master Flat
+  % imread          load an image and return its matrix and information
+  % label           label an image as light, dark, flat or skip
+  % listdlg         display a selector for images
+  % load            load an image and return its information
+  % mastrostack     create the Ma(e)strostack session
+  % plot            plot the user interface and images
+  % stack           STACK light images, correcting with dark and flat.
+  %
+  % (c) E. Farhi, 2018. GPL2.
 
   properties
     toleranceTranslation  = 0.01; % in percent
@@ -11,21 +69,23 @@ classdef mastrostack < handle
     %      image_size
     %      image_sum
     %      exif
-    %      type (light, dark, flat)
+    %      type (light, dark, flat, skip, none)
     %      points
     %      rotation
     %      translation
-    %      scaling
+    %      sharpness
+    %      width
     %      thumbnail
+    
+    %      scaling
     %      ra
     %      dec
     %      focal_length
     %      sensor_width
     %      sensor_height
     %      exposureTime
-    %      sharpness
     
-    % the actual image matrix are not stored (except when given as such)
+    % the actual image matrices are not stored (except when given as such)
     % as we expect to handle 100's of images.
     dark    = 0;  % stored as a double in [0-1]
     flat    = 0;  % stored as a double in [0-1]
@@ -38,13 +98,29 @@ classdef mastrostack < handle
   methods
   
     % I/O stuff ================================================================
-    function self = mastrostack(source)
+    function self = mastrostack(source, dark, flat)
+      % mastrostack: create the Ma(e)strostack session, load files and display
+      %   the interface.
+      %
+      % self = mastrostack(images)
+      %   import given images, specified as filenames (supports directories, wildcards)
+      % self = mastrostack(light, dark, flat)
+      %   import specified 'light','dark','flat' images.
 
       % load catalogs: objects, stars
       disp([ mfilename ': Welcome !' ]);
       
-      if nargin % import images
-        imread(self, source, 0);
+      if nargin == 1 % import images
+        img = load(self, source);
+      elseif nargin > 1
+        img = load(self, source);
+        label(self, 'light', img);
+        img = load(self, dark);
+        label(self, 'dark', img);
+        if narhin > 2
+          img = load(self, flat);
+          label(self, 'flat', img);
+        end
       end
       
       plot(self);
@@ -54,10 +130,14 @@ classdef mastrostack < handle
     function [im, img] = imread(self, source, flag)
       % imread: read an image, and store its information
       %
+      % Supported file formats include JPG, PNG, BMP, GIF, TIFF, FITS
+      %
       %  [im, img] = imread(self, filename or matrix or index)
       %    returns the image matrix and information
+      %  [~, img] = imread(self, filename or matrix or index, 0)
+      %    only returns the image information, avoiding to read the file
       %
-      %  The first 'light' loaded image defines the default reference image.
+      % see also: imread
       
       % flag: when 0, do not force to read matrix images
       if nargin < 3, flag=1; end
@@ -110,8 +190,14 @@ classdef mastrostack < handle
       
     end % imread
     
-    function load(self, source)
-      imread(self, source, 0);
+    function img = load(self, source)
+      % load: read an image, and store its information
+      %
+      % Supported file formats include JPG, PNG, BMP, GIF, TIFF, FITS
+      %
+      %  img = load(self, filename or matrix or index)
+      %    returns the image matrix and information.
+      [~,img] = imread(self, source, 0);
     end % load
     
     function [found, src] = exist(self, source)
@@ -174,6 +260,9 @@ classdef mastrostack < handle
     
     function im = getdark(self)
       % getdark: compute the mean Dark frame, using labelled images
+      %
+      % im = getdark(self)
+      %   return the master flat image as the mean of all 'dark' labelled images
       
       if any(~isfinite(self.dark)), self.dark=0; end
       if isempty(self.dark) || isscalar(self.dark)
@@ -199,6 +288,9 @@ classdef mastrostack < handle
     
     function im = getflat(self)
       % getflat: compute the mean Flat frame, using labelled images
+      %
+      % im = getflat(self)
+      %   return the master flat image as the mean of all 'flat' labelled images
       
       if any(~isfinite(self.flat)), self.flat=0; end
       if isempty(self.flat) || isscalar(self.flat)
@@ -229,6 +321,10 @@ classdef mastrostack < handle
 
     function im = correct(self, im, cl)
       % correct: correct an image for vigneting and background
+      %
+      % correct(self, im)
+      %   divide the image by the flat, and subtract the dark
+      %   'im' is a MxN or MxNx3 matrix, from e.g. imread
       if nargin < 2, return; end
       if nargin < 3
         cl = class(im); % we shall then cast back
@@ -253,94 +349,13 @@ classdef mastrostack < handle
       
     end % correct
     
-    function plot(self, img, im)
-    
-      if nargin < 2
-        % we search for the first 'light' image
-        img = [];
-        for index=1:numel(self.images)
-          if strcmp(self.images(index).type, 'light')
-            img = self.images(index);
-            break
-          end
-        end
-        if isempty(img), img = 1; end
-      end
+    function t=about(self)
+      % about: display an About dialog box
+      %
+      % t=about(self)
+      %   returns the 'about' string
       
-      fig = findall(0, 'Tag', 'mastrostack');
-      if isempty(fig) % build the figure
-        fig = figure('Name','Ma(e)stroStack','Tag','mastrostack', ...
-          'MenuBar','none', 'Toolbar','figure',...
-          'CloseRequestFcn',      {@MenuCallback, self }, ...
-          'WindowButtonDownFcn',  {@ButtonDownCallback, self}, ...
-          'KeyPressFcn',          {@KeyPressCallback, self }, ...
-          'WindowScrollWheelFcn', {@ScrollWheelCallback,self});
-        % add menu items and mouse/keyboard callbacks
-        m = uimenu(fig, 'Label', 'File');
-        uimenu(m, 'Label', 'Open',        ...
-          'Callback', {@MenuCallback, self },'Accelerator','o');
-        uimenu(m, 'Label', 'Open light images',        ...
-          'Callback', {@MenuCallback, self });
-        uimenu(m, 'Label', 'Open dark images',        ...
-          'Callback', {@MenuCallback, self });
-        uimenu(m, 'Label', 'Open flat images',        ...
-          'Callback', {@MenuCallback, self });
-        uimenu(m, 'Label', 'Save',        ...
-          'Callback', 'filemenufcn(gcbf,''FileSave'')','Accelerator','s');
-        uimenu(m, 'Label', 'Save As...',        ...
-          'Callback', 'filemenufcn(gcbf,''FileSaveAs'')');
-        uimenu(m, 'Label', 'Print',        ...
-          'Callback', 'printdlg(gcbf)');
-        uimenu(m, 'Label', 'Close',        ...
-          'Callback', {@MenuCallback, self }, ...
-          'Accelerator','w', 'Separator','on');
-          
-        m = uimenu(fig, 'Label', 'Image');
-        uimenu(m, 'Label', 'Mark as Light image...',       ...
-          'Callback', {@MenuCallback, self },'Accelerator','l');
-        uimenu(m, 'Label', 'Mark as Dark image...',        ...
-          'Callback', {@MenuCallback, self },'Accelerator','d');
-        uimenu(m, 'Label', 'Mark as Flat image...',        ...
-          'Callback', {@MenuCallback, self },'Accelerator','f');
-        uimenu(m, 'Label', 'Mark as "skip"...',        ...
-          'Callback', {@MenuCallback, self },'Accelerator','i');
-        uimenu(m, 'Label', 'Mark as Reference image',        ...
-          'Callback', {@MenuCallback, self },'Accelerator','r');
-        uimenu(m, 'Label', 'Show in log scale',        ...
-          'Callback', {@MenuCallback, self });
-        uimenu(m, 'Label', 'Next image', 'Separator','on',       ...
-          'Callback', {@MenuCallback, self },'Accelerator','n');
-        uimenu(m, 'Label', 'Previous image',        ...
-          'Callback', {@MenuCallback, self },'Accelerator','p');
-        uimenu(m, 'Label', 'Goto image...',    ...
-          'Callback', {@MenuCallback, self });
-          uimenu(m, 'Label', 'Clear image(s)...', 'Separator','on',    ...
-          'Callback', {@MenuCallback, self });
-        
-        m = uimenu(fig, 'Label', 'Compute');
-        uimenu(m, 'Label', 'Set tolerances',        ...
-          'Callback', {@MenuCallback, self });
-        uimenu(m, 'Label', 'Automatic control points',        ...
-          'Callback', {@MenuCallback, self },'Accelerator','a');
-        uimenu(m, 'Label', 'Clear all control points',        ...
-          'Callback', {@MenuCallback, self },'Accelerator','c');
-        uimenu(m, 'Label', 'Show sharpness',        ...
-          'Callback', {@MenuCallback, self });
-        uimenu(m, 'Label', 'Compute master Dark',        ...
-          'Callback', {@MenuCallback, self });
-        uimenu(m, 'Label', 'Compute master Flat',        ...
-          'Callback', {@MenuCallback, self });
-        uimenu(m, 'Label', 'Align', 'Separator','on',       ...
-          'Callback', {@MenuCallback, self });
-        uimenu(m, 'Label', 'Stack',       ...
-          'Callback', {@MenuCallback, self });
-        % install mouse event handler on axis
-        set(gca, 'ButtonDownFcn', {@ButtonDownCallback, self }); % will get its CurrentPoint
-        set(fig, 'KeyPressFcn',   {@MenuCallback, self });       % will get its CurrentCharacter
-        set(fig, 'WindowScrollWheelFcn',   {@ScrollWheelCallback, self });
-        set(fig, 'UserData',self);
-        
-        t = {'\bf Welcome to {\color{magenta}Ma(e)stroStack} !', ...
+      t = {'\bf Welcome to {\color{magenta}Ma(e)stroStack} ! (c) E.Farhi', ...
           ' ', ...
           'This application allows to stack amateur astro-photography images', ...
           ' ', ...
@@ -365,7 +380,38 @@ classdef mastrostack < handle
           '  A: select automatically control points for alignment', ...
           '  click: add a control point in the image for alignment', ...
           ' ' };
-        t = text(0.1,0.5, t, 'Units','normalized');
+      if nargout == 0
+        CreateMode.WindowStyle = 'modal';
+        CreateMode.Interpreter='tex';
+        msgbox(t, ...
+          'Ma(e)stroStack: About', CreateMode);
+      end
+    end % about
+    
+    function h=plot(self, img, im)
+      % plot: plot images
+      %
+      % h=plot(self)
+      %   plot the current or first 'light' image
+      % h=plot(self, image)
+      %   same as above with specified image (can be given as name or index)
+      if nargin < 2
+        % we search for the first 'light' image
+        img = [];
+        for index=1:numel(self.images)
+          if strcmp(self.images(index).type, 'light')
+            img = self.images(index);
+            break
+          end
+        end
+        if isempty(img), img = 1; end
+      end
+      
+      fig = findall(0, 'Tag', 'mastrostack');
+      if isempty(fig) % build the figure
+        fig = build_interface(self);
+        
+        t = text(0.1,0.5, about(self), 'Units','normalized');
         
       else
         set(0, 'CurrentFigure',fig); % activate but no raise
@@ -410,10 +456,20 @@ classdef mastrostack < handle
         self.images(self.currentImage).points.x, 100, 'g', 'x');
       hold off
       
-    end
+    end % plot
     
-    function im = stack(self)
+    function [im, filename] = stack(self, filename)
       % stack: stack all images on the reference
+      %
+      % im = stack(self)
+      %   return the stacked image, using the master dark and flat for correction,
+      %   aligning all images on the reference, and adding them with sub-pixel
+      %   resolution. The resulting image is written to disk at the reference
+      %   location with name '_stacked.png'. 
+      %   You can stop the stacking by closing the progress bar. 
+      %   If some images are ignored, you may increase e.g. toleranceTranslation.
+      % im = stack(self, filename)
+      %   same as above, and specifies an output filename.
       
       % compute dark and flat (if not done yet)
       getdark(self);
@@ -421,6 +477,7 @@ classdef mastrostack < handle
       self.light = 0.0;
       self.lightN= uint8(0);
       ExposureTime = 0;
+      if nargin < 2, filename = ''; end
       
       % we first check for the reference and its control points
       for index=1:numel(self.images)
@@ -477,7 +534,7 @@ classdef mastrostack < handle
           plot(self, this_img, im);
           
           % compute the affine transformation wrt reference (using control points)
-          [ret_t, ret_R] = imdiff(self, self.images(self.reference), this_img);
+          [ret_t, ret_R] = diff(self, this_img);
           if isempty (ret_t), continue; end
           
           % we read the image and transform it
@@ -530,25 +587,46 @@ classdef mastrostack < handle
       % write stacked file
       this_img = self.images(self.reference);
       this_img.exif.ExposureTime = ExposureTime;
-      write_stacked(self.light, [ this_img.id '.png' ], this_img.exif);
+      if isempty(filename)
+        if ischar(this_img.source)
+          p = fileparts(this_img.source);
+        else p = pwd; end
+        filename = fullfile(p, [ this_img.id '.png' ]);
+      end
+      write_stacked(self.light, filename, this_img.exif);
       
     end % stack
     
     function [ret_t, ret_R] = diff(self, img1)
+      % diff: compute the translation and rotation wrt reference image
+      %
+      % [t,R] = diff(self, image)
+      %   return the translation and rotation of image wrt reference
       [~,img1] = imread(self, img1, 0);
       [~,img2] = imread(self, self.reference, 0);
+      ret_t= []; ret_R = []
+      if isempty(img1) || isempty(img2), return; end
       if numel(img1.points.x) < 2
         img1 = cpselect(self, img1);
       end
       if numel(img2.points.x) < 2
         img2 = cpselect(self, img2);
       end
-      ret_t= []; ret_R = []
+      
       if isempty(img2), return; end
       [ret_t, ret_R] = imdiff(self, img2, img1);
     end % diff
     
     function label(self, lab, img)
+      % label: set the label on given/all data sets
+      %
+      % supported labels are '' (none), 'light','dark','flat',skip'
+      % 
+      % label(self, label)
+      %   set the same label on all images
+      % label(self, label, images)
+      %   set the same label on on given images
+      %   'images' can be given as name or index
       if nargin < 2, return; end
       if nargin < 3, img = 1:numel(self.images); end
       
@@ -569,6 +647,14 @@ classdef mastrostack < handle
     
     function selection = listdlg(self, name, SelectionMode)
       % listdlg: display a dialog list to select images
+      %
+      % listdlg(self)
+      %   display a dialog to select some images. return the selection indices
+      % listdlg(self, title)
+      %   display a dialog to select some images with given dialog title
+      % listdlg(self, title, 'single' or 'multiple')
+      %   display a dialog with title, and single or multiple selection ability
+
       if nargin < 2, name          = 'select image'; end
       if nargin < 3, SelectionMode = 'multiple'; end
       liststring = {};
@@ -596,6 +682,13 @@ classdef mastrostack < handle
     
     function this_img = cpselect(self, img, im)
       % cpselect: automatically set control points
+      %
+      % cpselect(self)
+      %   set all control points and compute sharpness
+      % cpselect(self, images)
+      %   set control points and compute sharpness on given images
+      %   'images' can be given as name or index
+      
       if nargin < 2, img=1:numel(self.images); end
       
       delete(findall(0, 'Tag', [ mfilename '_waitbar' ]));
@@ -726,7 +819,7 @@ function ScrollWheelCallback(src, evnt, self)
 end % ScrollWheelCallback
 
 function MenuCallback(src, evnt, self)
-
+  % MenuCallback: the main callback for menu and keyboard actions
   if nargin < 3, self=[]; end
   
   if ~isempty(self) && isempty(self.dndcontrol)
@@ -736,6 +829,7 @@ function MenuCallback(src, evnt, self)
     end
     target = uicontrol('style','pushbutton','String','Drop Files Here', ...
       'Units','normalized', 'Position', [ 0 0 0.3 0.07 ], ...
+      'ToolTipString','Drop files or click me', ...
       'callback', {@MenuCallback, self });
     self.dndcontrol = dndcontrol(target,@MenuCallback,@MenuCallback);
   end
@@ -905,10 +999,7 @@ function MenuCallback(src, evnt, self)
     self.dndcontrol = [];
     delete(gcf);
   case 'Show sharpness'
-    figure; plot([ self.images.sharpness ]./[ self.images.width ])
-    xlabel('Image index')
-    ylabel('Sharpness (higher is better)');
-    titme('Sharpness: identify low sharpness with the Marker tool, then mark them as Skip');
+    figure; plot_sharpness(self.images);
   case 'Set tolerances'
     prompt={'\bf {\color{blue}Translation} (0-1, e.g 0.01):','\bf {\color{blue}Rotation} [deg, e.g. 3]:'};
     name=[ mfilename ': Tolerances' ];
@@ -926,7 +1017,106 @@ function MenuCallback(src, evnt, self)
     if isfinite(str2double(answer{2}))
       self.toleranceRotation = str2double(answer{2});
     end
+  case 'Select images on sharpness...'
+    figure; [h, x_light, y_light] = plot_sharpness(self.images);
+    title('Sharpness: Click on threshold - lower images will be marked as SKIP');
+    [x,y,but] = ginput(1);
+    if ~isempty(but) && but==1
+      disp([ mfilename ': sharpness selection: ' num2str(y) ]);
+      
+      selection = find(y_light <= y);
+      selection = x_light(selection);
+      for index=selection(:)'
+        self.images(index).type='skip';
+      end
+      cla;
+      [h, x_light, y_light] = plot_sharpness(self.images);
+      h=line([1 numel(self.images)], [y y]); set(h, 'LineStyle','--','Color','r');
+    end
+  case 'About'
+    about(self);
   otherwise
     disp([ mfilename ': unknown action ' action ])
   end
 end % MenuCallback
+
+function fig = build_interface(self)
+  % build_interface: build the user interface (when not there yet)
+  fig = figure('Name','Ma(e)stroStack','Tag','mastrostack', ...
+      'MenuBar','none', 'Toolbar','figure',...
+      'CloseRequestFcn',      {@MenuCallback, self }, ...
+      'WindowButtonDownFcn',  {@ButtonDownCallback, self}, ...
+      'KeyPressFcn',          {@KeyPressCallback, self }, ...
+      'WindowScrollWheelFcn', {@ScrollWheelCallback,self});
+    % add menu items and mouse/keyboard callbacks
+    m = uimenu(fig, 'Label', 'File');
+    uimenu(m, 'Label', 'Open',        ...
+      'Callback', {@MenuCallback, self },'Accelerator','o');
+    uimenu(m, 'Label', 'Open light images',        ...
+      'Callback', {@MenuCallback, self });
+    uimenu(m, 'Label', 'Open dark images',        ...
+      'Callback', {@MenuCallback, self });
+    uimenu(m, 'Label', 'Open flat images',        ...
+      'Callback', {@MenuCallback, self });
+    uimenu(m, 'Label', 'Save',        ...
+      'Callback', 'filemenufcn(gcbf,''FileSave'')','Accelerator','s');
+    uimenu(m, 'Label', 'Save As...',        ...
+      'Callback', 'filemenufcn(gcbf,''FileSaveAs'')');
+    uimenu(m, 'Label', 'Print',        ...
+      'Callback', 'printdlg(gcbf)');
+    uimenu(m, 'Label', 'Close',        ...
+      'Callback', {@MenuCallback, self }, ...
+      'Accelerator','w', 'Separator','on');
+      
+    m = uimenu(fig, 'Label', 'Image');
+    uimenu(m, 'Label', 'Mark as Light image...',       ...
+      'Callback', {@MenuCallback, self },'Accelerator','l');
+    uimenu(m, 'Label', 'Mark as Dark image...',        ...
+      'Callback', {@MenuCallback, self },'Accelerator','d');
+    uimenu(m, 'Label', 'Mark as Flat image...',        ...
+      'Callback', {@MenuCallback, self },'Accelerator','f');
+    uimenu(m, 'Label', 'Mark as "skip"...',        ...
+      'Callback', {@MenuCallback, self },'Accelerator','i');
+    uimenu(m, 'Label', 'Mark as Reference image',        ...
+      'Callback', {@MenuCallback, self },'Accelerator','r');
+    uimenu(m, 'Label', 'Show in log scale',        ...
+      'Callback', {@MenuCallback, self });
+    uimenu(m, 'Label', 'Next image', 'Separator','on',       ...
+      'Callback', {@MenuCallback, self },'Accelerator','n');
+    uimenu(m, 'Label', 'Previous image',        ...
+      'Callback', {@MenuCallback, self },'Accelerator','p');
+    uimenu(m, 'Label', 'Goto image...',    ...
+      'Callback', {@MenuCallback, self });
+      uimenu(m, 'Label', 'Clear image(s)...', 'Separator','on',    ...
+      'Callback', {@MenuCallback, self });
+    
+    m = uimenu(fig, 'Label', 'Compute');
+    uimenu(m, 'Label', 'Set tolerances',        ...
+      'Callback', {@MenuCallback, self });
+    uimenu(m, 'Label', 'Automatic control points',        ...
+      'Callback', {@MenuCallback, self },'Accelerator','a');
+    uimenu(m, 'Label', 'Clear all control points',        ...
+      'Callback', {@MenuCallback, self },'Accelerator','c');
+    uimenu(m, 'Label', 'Show sharpness',        ...
+      'Callback', {@MenuCallback, self });
+    uimenu(m, 'Label', 'Select images on sharpness...',        ...
+      'Callback', {@MenuCallback, self });
+    uimenu(m, 'Label', 'Compute master Dark', 'Separator','on',        ...
+      'Callback', {@MenuCallback, self });
+    uimenu(m, 'Label', 'Compute master Flat',        ...
+      'Callback', {@MenuCallback, self });
+    uimenu(m, 'Label', 'Align', 'Separator','on',       ...
+      'Callback', {@MenuCallback, self });
+    uimenu(m, 'Label', 'Stack',       ...
+      'Callback', {@MenuCallback, self });
+      
+    m = uimenu(fig, 'Label', 'Help');
+    uimenu(m, 'Label', 'About',        ...
+      'Callback', {@MenuCallback, self });
+    
+    % install mouse event handler on axis
+    set(gca, 'ButtonDownFcn', {@ButtonDownCallback, self }); % will get its CurrentPoint
+    set(fig, 'KeyPressFcn',   {@MenuCallback, self });       % will get its CurrentCharacter
+    set(fig, 'WindowScrollWheelFcn',   {@ScrollWheelCallback, self });
+    set(fig, 'UserData',self);
+end % build_interface
