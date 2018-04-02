@@ -5,8 +5,10 @@ classdef mastrostack < handle
   %  dark and flat images for correction. All images are aligned on a reference, 
   %  and added with sub-pixel resolution.
   %
-  % Load images
+  % Syntax
   % -----------
+  %   ma = mastrostack;
+  %     start the user interface, without loading images (can be done afterwards)
   %   ma = mastrostack(images)
   %     loads images without setting their type
   %   ma = mastrostack(light, dark)

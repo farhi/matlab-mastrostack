@@ -1,0 +1,449 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+    <meta content="text/html; charset=windows-1252"
+      http-equiv="content-type">
+    <title>Empty Web Page</title>
+  </head>
+  <body>
+    Ma(e)stroStack: a class to automatically align and stack
+    astro-photography images<br>
+    <br>
+    Scope<br>
+    <br>
+    After importing images (see below), the stacked image is computed,
+    using the<br>
+    &nbsp;&nbsp; dark and flat images for correction. All images are
+    aligned on a reference, <br>
+    &nbsp;&nbsp; and added with sub-pixel resolution.<br>
+    <br>
+    <meta http-equiv="content-type" content="text/html;
+      charset=windows-1252">
+    <p style="box-sizing: border-box; margin-top: 0px; margin-bottom:
+      16px; color: rgb(36, 41, 46); font-family: -apple-system,
+      BlinkMacSystemFont, &quot;Segoe UI&quot;, Helvetica, Arial,
+      sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI
+      Emoji&quot;, &quot;Segoe UI Symbol&quot;; font-size: 16px;
+      font-style: normal; font-variant-ligatures: normal;
+      font-variant-caps: normal; font-weight: 400; letter-spacing:
+      normal; orphans: 2; text-align: start; text-indent: 0px;
+      text-transform: none; white-space: normal; widows: 2;
+      word-spacing: 0px; -webkit-text-stroke-width: 0px;
+      text-decoration-style: initial; text-decoration-color: initial;">This
+      function (for Matlab/Octave) gets a list of images, and
+      automatically determines bright stars as control points. These are
+      followed along pictures, and used to build an affine
+      transformation at constant scale (e.g. a rotation and
+      translation). All images are stacked over the first image used as
+      reference. The images can be given as file names (may include
+      wildcards), or matrices from e.g. imread, and support both RGB and
+      gray images.</p>
+    <p style="box-sizing: border-box; margin-top: 0px; margin-bottom:
+      16px; color: rgb(36, 41, 46); font-family: -apple-system,
+      BlinkMacSystemFont, &quot;Segoe UI&quot;, Helvetica, Arial,
+      sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI
+      Emoji&quot;, &quot;Segoe UI Symbol&quot;; font-size: 16px;
+      font-style: normal; font-variant-ligatures: normal;
+      font-variant-caps: normal; font-weight: 400; letter-spacing:
+      normal; orphans: 2; text-align: start; text-indent: 0px;
+      text-transform: none; white-space: normal; widows: 2;
+      word-spacing: 0px; -webkit-text-stroke-width: 0px;
+      text-decoration-style: initial; text-decoration-color: initial;">As
+      stars are used for the alignment, this method is suited for deep
+      sky images, but not for planetary imaging.</p>
+    <p style="box-sizing: border-box; margin-top: 0px; margin-bottom:
+      16px; color: rgb(36, 41, 46); font-family: -apple-system,
+      BlinkMacSystemFont, &quot;Segoe UI&quot;, Helvetica, Arial,
+      sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI
+      Emoji&quot;, &quot;Segoe UI Symbol&quot;; font-size: 16px;
+      font-style: normal; font-variant-ligatures: normal;
+      font-variant-caps: normal; font-weight: 400; letter-spacing:
+      normal; orphans: 2; text-align: start; text-indent: 0px;
+      text-transform: none; white-space: normal; widows: 2;
+      word-spacing: 0px; -webkit-text-stroke-width: 0px;
+      text-decoration-style: initial; text-decoration-color: initial;">This
+      function does not make use of the phase correlation technique, but
+      operates directly on the raw images. It assumes that at least two
+      bright<br style="box-sizing: border-box;">
+      stars remain on each picture, but tolerate translations and
+      rotations, as well as stars/control points that appear/disappear
+      on the field of view. The procedure also ignores very sharp peaks,
+      assuming they originate from dead pixels (and would then be static
+      over images, leading to traces).</p>
+    <p style="box-sizing: border-box; margin-top: 0px; margin-bottom:
+      16px; color: rgb(36, 41, 46); font-family: -apple-system,
+      BlinkMacSystemFont, &quot;Segoe UI&quot;, Helvetica, Arial,
+      sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI
+      Emoji&quot;, &quot;Segoe UI Symbol&quot;; font-size: 16px;
+      font-style: normal; font-variant-ligatures: normal;
+      font-variant-caps: normal; font-weight: 400; letter-spacing:
+      normal; orphans: 2; text-align: start; text-indent: 0px;
+      text-transform: none; white-space: normal; widows: 2;
+      word-spacing: 0px; -webkit-text-stroke-width: 0px;
+      text-decoration-style: initial; text-decoration-color: initial;">It
+      is highly recommended to specify a 'dark' frame filename, which
+      will be subtracted to all images, in order to e.g. remove most
+      hot/dead pixels. To get such a 'dark', use your camera alone and
+      shot once with the cap on, same settings as the other pictures
+      (duration, ISO). Image should be full black.</p>
+    <p style="box-sizing: border-box; margin-top: 0px; margin-bottom:
+      16px; color: rgb(36, 41, 46); font-family: -apple-system,
+      BlinkMacSystemFont, &quot;Segoe UI&quot;, Helvetica, Arial,
+      sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI
+      Emoji&quot;, &quot;Segoe UI Symbol&quot;; font-size: 16px;
+      font-style: normal; font-variant-ligatures: normal;
+      font-variant-caps: normal; font-weight: 400; letter-spacing:
+      normal; orphans: 2; text-align: start; text-indent: 0px;
+      text-transform: none; white-space: normal; widows: 2;
+      word-spacing: 0px; -webkit-text-stroke-width: 0px;
+      text-decoration-style: initial; text-decoration-color: initial;">You
+      may as well specify a 'flat' frame filename, which will be divided
+      to all images, in order to counter vignetting (darker borders). To
+      get such a 'flat', shot once with the scope pointing at a uniform
+      view (sky, white wall). Adapt the duration so that you get a
+      rather gray image (not full black or white).</p>
+    <p style="box-sizing: border-box; margin-top: 0px; margin-bottom:
+      16px; color: rgb(36, 41, 46); font-family: -apple-system,
+      BlinkMacSystemFont, &quot;Segoe UI&quot;, Helvetica, Arial,
+      sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI
+      Emoji&quot;, &quot;Segoe UI Symbol&quot;; font-size: 16px;
+      font-style: normal; font-variant-ligatures: normal;
+      font-variant-caps: normal; font-weight: 400; letter-spacing:
+      normal; orphans: 2; text-align: start; text-indent: 0px;
+      text-transform: none; white-space: normal; widows: 2;
+      word-spacing: 0px; -webkit-text-stroke-width: 0px;
+      text-decoration-style: initial; text-decoration-color: initial;">During
+      the procedure, the current image and its stars/control points are
+      indicated, as well as the stacked image. A waitbar indicates the
+      progress. To abort the procedure, close the waitbar. The stacked
+      image so far will be saved and returned. Supported image formats
+      include JPG, PNG, TIFF, FITS.</p>
+    <p style="box-sizing: border-box; margin-top: 0px; margin-bottom:
+      16px; color: rgb(36, 41, 46); font-family: -apple-system,
+      BlinkMacSystemFont, &quot;Segoe UI&quot;, Helvetica, Arial,
+      sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI
+      Emoji&quot;, &quot;Segoe UI Symbol&quot;; font-size: 16px;
+      font-style: normal; font-variant-ligatures: normal;
+      font-variant-caps: normal; font-weight: 400; letter-spacing:
+      normal; orphans: 2; text-align: start; text-indent: 0px;
+      text-transform: none; white-space: normal; widows: 2;
+      word-spacing: 0px; -webkit-text-stroke-width: 0px;
+      text-decoration-style: initial; text-decoration-color: initial;">The
+      resulting stacked image is stored using the first/reference image
+      name, adding '_stacked', in the PNG format. This routine can stack
+      a hundred 4k images within 15 minutes. Memory requirements are
+      about 2Gb for 4k images.</p>
+    <p style="box-sizing: border-box; margin-top: 0px; margin-bottom:
+      16px; color: rgb(36, 41, 46); font-family: -apple-system,
+      BlinkMacSystemFont, &quot;Segoe UI&quot;, Helvetica, Arial,
+      sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI
+      Emoji&quot;, &quot;Segoe UI Symbol&quot;; font-size: 16px;
+      font-style: normal; font-variant-ligatures: normal;
+      font-variant-caps: normal; font-weight: 400; letter-spacing:
+      normal; orphans: 2; text-align: start; text-indent: 0px;
+      text-transform: none; white-space: normal; widows: 2;
+      word-spacing: 0px; -webkit-text-stroke-width: 0px;
+      text-decoration-style: initial; text-decoration-color: initial;">We
+      recommend that you further use DarkTable or RawTherapee to enhance
+      the low intensity features (black, brightness, contrast).<br>
+    </p>
+    <h2 style="box-sizing: border-box; margin-top: 24px; margin-bottom:
+      16px; font-size: 1.5em; font-weight: 600; line-height: 1.25;
+      padding-bottom: 0.3em; border-bottom: 1px solid rgb(234, 236,
+      239); color: rgb(36, 41, 46); font-family: -apple-system,
+      BlinkMacSystemFont, &quot;Segoe UI&quot;, Helvetica, Arial,
+      sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI
+      Emoji&quot;, &quot;Segoe UI Symbol&quot;; font-style: normal;
+      font-variant-ligatures: normal; font-variant-caps: normal;
+      letter-spacing: normal; orphans: 2; text-align: start;
+      text-indent: 0px; text-transform: none; white-space: normal;
+      widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px;
+      text-decoration-style: initial; text-decoration-color: initial;">Syntax</h2>
+    <div class="highlight highlight-source-matlab" style="box-sizing:
+      border-box; margin-bottom: 16px; color: rgb(36, 41, 46);
+      font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe
+      UI&quot;, Helvetica, Arial, sans-serif, &quot;Apple Color
+      Emoji&quot;, &quot;Segoe UI Emoji&quot;, &quot;Segoe UI
+      Symbol&quot;; font-size: 16px; font-style: normal;
+      font-variant-ligatures: normal; font-variant-caps: normal;
+      font-weight: 400; letter-spacing: normal; orphans: 2; text-align:
+      start; text-indent: 0px; text-transform: none; white-space:
+      normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width:
+      0px; text-decoration-style: initial; text-decoration-color:
+      initial;">
+      <pre style="box-sizing: border-box; font-family: SFMono-Regular, Consolas, &quot;Liberation Mono&quot;, Menlo, Courier, monospace; font-size: 13.6px; margin-top: 0px; margin-bottom: 0px; word-wrap: normal; padding: 16px; overflow: auto; line-height: 1.45; background-color: rgb(246, 248, 250); border-radius: 3px; word-break: normal;">&gt;&gt; [stacked, output] = mastrostack(images, dark, flat)
+&gt;&gt; stacked = mastrostack;</pre>
+    </div>
+    <p style="box-sizing: border-box; margin-top: 0px; margin-bottom:
+      16px; color: rgb(36, 41, 46); font-family: -apple-system,
+      BlinkMacSystemFont, &quot;Segoe UI&quot;, Helvetica, Arial,
+      sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI
+      Emoji&quot;, &quot;Segoe UI Symbol&quot;; font-size: 16px;
+      font-style: normal; font-variant-ligatures: normal;
+      font-variant-caps: normal; font-weight: 400; letter-spacing:
+      normal; orphans: 2; text-align: start; text-indent: 0px;
+      text-transform: none; white-space: normal; widows: 2;
+      word-spacing: 0px; -webkit-text-stroke-width: 0px;
+      text-decoration-style: initial; text-decoration-color: initial;"><br>
+    </p>
+    <p style="box-sizing: border-box; margin-top: 0px; margin-bottom:
+      16px; color: rgb(36, 41, 46); font-family: -apple-system,
+      BlinkMacSystemFont, &quot;Segoe UI&quot;, Helvetica, Arial,
+      sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI
+      Emoji&quot;, &quot;Segoe UI Symbol&quot;; font-size: 16px;
+      font-style: normal; font-variant-ligatures: normal;
+      font-variant-caps: normal; font-weight: 400; letter-spacing:
+      normal; orphans: 2; text-align: start; text-indent: 0px;
+      text-transform: none; white-space: normal; widows: 2;
+      word-spacing: 0px; -webkit-text-stroke-width: 0px;
+      text-decoration-style: initial; text-decoration-color: initial;">ma
+      = mastrostack;<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; start the user interface, without
+      loading images (can be done afterwards)<br>
+      &nbsp;&nbsp;&nbsp; ma = mastrostack(images)<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; loads images without setting their
+      type<br>
+      &nbsp;&nbsp;&nbsp; ma = mastrostack(light, dark)<br>
+      &nbsp;&nbsp;&nbsp; ma = mastrostack(light, dark, flat)<br>
+      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; loads light, dark (background) and
+      flat (scope response) images, and label them.<br>
+      &nbsp;<br>
+    </p>
+    Input<br>
+    <meta http-equiv="content-type" content="text/html;
+      charset=windows-1252">
+    <ul style="box-sizing: border-box; padding-left: 2em; margin-top:
+      0px; margin-bottom: 16px; color: rgb(36, 41, 46); font-family:
+      -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;,
+      Helvetica, Arial, sans-serif, &quot;Apple Color Emoji&quot;,
+      &quot;Segoe UI Emoji&quot;, &quot;Segoe UI Symbol&quot;;
+      font-size: 16px; font-style: normal; font-variant-ligatures:
+      normal; font-variant-caps: normal; font-weight: 400;
+      letter-spacing: normal; orphans: 2; text-align: start;
+      text-indent: 0px; text-transform: none; white-space: normal;
+      widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px;
+      text-decoration-style: initial; text-decoration-color: initial;">
+      <li style="box-sizing: border-box;">images: a filename name or
+        cell of file names, that may include wildcards, or matrix (rgb,
+        gray). When not given or empty, a file selector pops-up.</li>
+      <li style="box-sizing: border-box; margin-top: 0.25em;">dark: a
+        single dark frame which is subtracted to all images. When not
+        given or empty, a file selector pops-up. Use 'cancel' button to
+        proceed without dark subtraction.</li>
+      <li style="box-sizing: border-box; margin-top: 0.25em;">flat: a
+        single flat frame which is divided to all images. When not given
+        or empty, a file selector pops-up. Use 'cancel' button to
+        proceed without flat normalisation.</li>
+    </ul>
+    <br>
+    <br>
+    Output<br>
+    An object, which writes stacked images, and has the following
+    methods.<br>
+    <br>
+    Properties<br>
+    <br>
+    <br>
+    Methods<br>
+    <br>
+    about&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    display a dialg box<br>
+    &nbsp; correct&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    correct and image for dark (background) and flat (vigneting)<br>
+    &nbsp; cpselect&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ALIGN
+    images on reference<br>
+    &nbsp;
+    diff&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    compute difference of an image with reference<br>
+    &nbsp; delete&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    delete the mastrostack, and clear memory<br>
+    &nbsp;
+    exist&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    check if an image has already been
+    loaded&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    <br>
+    &nbsp; getdark&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    compute the master Dark<br>
+    &nbsp; getflat&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    compute the master Flat<br>
+    &nbsp; imread&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    load an image and return its matrix and information<br>
+    &nbsp;
+    label&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    label an image as light, dark, flat or skip<br>
+    &nbsp; listdlg&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    display a selector for images<br>
+    &nbsp;
+    load&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    load an image and return its information<br>
+    &nbsp; mastrostack&nbsp;&nbsp;&nbsp;&nbsp; create the Ma(e)strostack
+    session<br>
+    &nbsp;
+    plot&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    plot the user interface and images<br>
+    &nbsp;
+    stack&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+    STACK light images, correcting with dark and flat.<br>
+    <br>
+    Typical Usage<br>
+    <br>
+    After imporing the files, you should label them using the Image/Mark
+    as... <br>
+    &nbsp;&nbsp; menu items. Then define one of the images as the
+    reference (R). You can navigate<br>
+    &nbsp;&nbsp; within images with the Image/Goto menu item. 'Bad'
+    images can be skipped (ignored).<br>
+    &nbsp;&nbsp; To use them back, set their type to 'light'.<br>
+    &nbsp;&nbsp; You should then compute the master Dark and Flat images
+    (Compute menu).<br>
+    &nbsp;&nbsp; <br>
+    &nbsp;&nbsp; Then, use the Compute/Align item to compute the images
+    control points (stars)<br>
+    &nbsp;&nbsp; whch also corrects for background and scope response
+    when dark and flat are defined.<br>
+    &nbsp;<br>
+    &nbsp;&nbsp; We then advise to check the sharpness with the
+    'Compute/Show sharpness' which<br>
+    &nbsp;&nbsp; metric is highest for clearer images, and low for
+    blurred/moved ones. The axis<br>
+    &nbsp;&nbsp; is the image index. To automatically select best
+    images, use the menu item <br>
+    &nbsp;&nbsp; 'Compute/Select on sharpness' and set a threshold. All
+    images above (clean) <br>
+    &nbsp;&nbsp; will be selected, and those below will be marked as
+    'skip'.<br>
+    &nbsp;<br>
+    &nbsp;&nbsp; When ready, use the Compute/Stack menu item. The final
+    image is then shon <br>
+    &nbsp;&nbsp; and written to disk. Use e.g. Lightroom, RawTherapee,
+    DarkTable to enhance<br>
+    &nbsp;&nbsp; contrast.<br>
+    &nbsp;<br>
+    Issues<br>
+    <br>
+    Ignore many images<br>
+    <br>
+    <br>
+    &nbsp;&nbsp; If you have difficulties in stacking (some images do
+    not have enough control<br>
+    &nbsp;&nbsp; points), relax e.g. the translation tolerance, using
+    the menu item <br>
+    &nbsp;&nbsp; 'Compute/Set tolerances'.<br>
+    <br>
+    <meta http-equiv="content-type" content="text/html;
+      charset=windows-1252">
+    <h2 style="box-sizing: border-box; margin-top: 24px; margin-bottom:
+      16px; font-size: 1.5em; font-weight: 600; line-height: 1.25;
+      padding-bottom: 0.3em; border-bottom: 1px solid rgb(234, 236,
+      239); color: rgb(36, 41, 46); font-family: -apple-system,
+      BlinkMacSystemFont, &quot;Segoe UI&quot;, Helvetica, Arial,
+      sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI
+      Emoji&quot;, &quot;Segoe UI Symbol&quot;; font-style: normal;
+      font-variant-ligatures: normal; font-variant-caps: normal;
+      letter-spacing: normal; orphans: 2; text-align: start;
+      text-indent: 0px; text-transform: none; white-space: normal;
+      widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px;
+      text-decoration-style: initial; text-decoration-color: initial;">Requirements/Installation</h2>
+    <p style="box-sizing: border-box; margin-top: 0px; margin-bottom:
+      16px; color: rgb(36, 41, 46); font-family: -apple-system,
+      BlinkMacSystemFont, &quot;Segoe UI&quot;, Helvetica, Arial,
+      sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI
+      Emoji&quot;, &quot;Segoe UI Symbol&quot;; font-size: 16px;
+      font-style: normal; font-variant-ligatures: normal;
+      font-variant-caps: normal; font-weight: 400; letter-spacing:
+      normal; orphans: 2; text-align: start; text-indent: 0px;
+      text-transform: none; white-space: normal; widows: 2;
+      word-spacing: 0px; -webkit-text-stroke-width: 0px;
+      text-decoration-style: initial; text-decoration-color: initial;">Matlab,
+      no external toolbox.</p>
+    <meta http-equiv="content-type" content="text/html;
+      charset=windows-1252">
+    <h2 style="box-sizing: border-box; margin-top: 24px; margin-bottom:
+      16px; font-size: 1.5em; font-weight: 600; line-height: 1.25;
+      padding-bottom: 0.3em; border-bottom: 1px solid rgb(234, 236,
+      239); color: rgb(36, 41, 46); font-family: -apple-system,
+      BlinkMacSystemFont, &quot;Segoe UI&quot;, Helvetica, Arial,
+      sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI
+      Emoji&quot;, &quot;Segoe UI Symbol&quot;; font-style: normal;
+      font-variant-ligatures: normal; font-variant-caps: normal;
+      letter-spacing: normal; orphans: 2; text-align: start;
+      text-indent: 0px; text-transform: none; white-space: normal;
+      widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px;
+      text-decoration-style: initial; text-decoration-color: initial;">Credits</h2>
+    <p style="box-sizing: border-box; margin-top: 0px; margin-bottom:
+      16px; color: rgb(36, 41, 46); font-family: -apple-system,
+      BlinkMacSystemFont, &quot;Segoe UI&quot;, Helvetica, Arial,
+      sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI
+      Emoji&quot;, &quot;Segoe UI Symbol&quot;; font-size: 16px;
+      font-style: normal; font-variant-ligatures: normal;
+      font-variant-caps: normal; font-weight: 400; letter-spacing:
+      normal; orphans: 2; text-align: start; text-indent: 0px;
+      text-transform: none; white-space: normal; widows: 2;
+      word-spacing: 0px; -webkit-text-stroke-width: 0px;
+      text-decoration-style: initial; text-decoration-color: initial;"><a
+        href="http://nghiaho.com/?page_id=671" rel="nofollow"
+        style="box-sizing: border-box; background-color: transparent;
+        color: rgb(3, 102, 214); text-decoration: none;">http://nghiaho.com/?page_id=671</a></p>
+    <p style="box-sizing: border-box; margin-top: 0px; margin-bottom:
+      16px; color: rgb(36, 41, 46); font-family: -apple-system,
+      BlinkMacSystemFont, &quot;Segoe UI&quot;, Helvetica, Arial,
+      sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI
+      Emoji&quot;, &quot;Segoe UI Symbol&quot;; font-size: 16px;
+      font-style: normal; font-variant-ligatures: normal;
+      font-variant-caps: normal; font-weight: 400; letter-spacing:
+      normal; orphans: 2; text-align: start; text-indent: 0px;
+      text-transform: none; white-space: normal; widows: 2;
+      word-spacing: 0px; -webkit-text-stroke-width: 0px;
+      text-decoration-style: initial; text-decoration-color: initial;">See
+      also:</p>
+    <ul style="box-sizing: border-box; padding-left: 2em; margin-top:
+      0px; margin-bottom: 16px; color: rgb(36, 41, 46); font-family:
+      -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;,
+      Helvetica, Arial, sans-serif, &quot;Apple Color Emoji&quot;,
+      &quot;Segoe UI Emoji&quot;, &quot;Segoe UI Symbol&quot;;
+      font-size: 16px; font-style: normal; font-variant-ligatures:
+      normal; font-variant-caps: normal; font-weight: 400;
+      letter-spacing: normal; orphans: 2; text-align: start;
+      text-indent: 0px; text-transform: none; white-space: normal;
+      widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px;
+      text-decoration-style: initial; text-decoration-color: initial;">
+      <li style="box-sizing: border-box;">LxNstack<span>&nbsp;</span><a
+          href="https://sites.google.com/site/lxnstack/home"
+          rel="nofollow" style="box-sizing: border-box;
+          background-color: transparent; color: rgb(3, 102, 214);
+          text-decoration: none;">https://sites.google.com/site/lxnstack/home</a></li>
+      <li style="box-sizing: border-box; margin-top: 0.25em;">Deep Sky
+        Stacker<span>&nbsp;</span><a
+          href="http://deepskystacker.free.fr/french/" rel="nofollow"
+          style="box-sizing: border-box; background-color: transparent;
+          color: rgb(3, 102, 214); text-decoration: none;">http://deepskystacker.free.fr/french/</a></li>
+      <li style="box-sizing: border-box; margin-top: 0.25em;">Rot'n
+        Stack<span>&nbsp;</span><a
+          href="http://www.gdargaud.net/Hack/RotAndStack.html"
+          rel="nofollow" style="box-sizing: border-box;
+          background-color: transparent; color: rgb(3, 102, 214);
+          text-decoration: none;">http://www.gdargaud.net/Hack/RotAndStack.html</a></li>
+      <li style="box-sizing: border-box; margin-top: 0.25em;">DarkTable<span>&nbsp;</span><a
+          href="http://www.darktable.org/" rel="nofollow"
+          style="box-sizing: border-box; background-color: transparent;
+          color: rgb(3, 102, 214); text-decoration: none;">http://www.darktable.org/</a></li>
+      <li style="box-sizing: border-box; margin-top: 0.25em;">RawTherapee<span>&nbsp;</span><a
+          href="http://rawtherapee.com/" rel="nofollow"
+          style="box-sizing: border-box; background-color: transparent;
+          color: rgb(3, 102, 214); text-decoration: none;">http://rawtherapee.com/</a></li>
+    </ul>
+    <p style="box-sizing: border-box; margin-top: 0px; margin-bottom:
+      0px !important; color: rgb(36, 41, 46); font-family:
+      -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;,
+      Helvetica, Arial, sans-serif, &quot;Apple Color Emoji&quot;,
+      &quot;Segoe UI Emoji&quot;, &quot;Segoe UI Symbol&quot;;
+      font-size: 16px; font-style: normal; font-variant-ligatures:
+      normal; font-variant-caps: normal; font-weight: 400;
+      letter-spacing: normal; orphans: 2; text-align: start;
+      text-indent: 0px; text-transform: none; white-space: normal;
+      widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px;
+      text-decoration-style: initial; text-decoration-color: initial;">E.
+      Farhi April 2018. Version 1.0. GPL2.</p>
+    <br>
+  </body>
+</html>
