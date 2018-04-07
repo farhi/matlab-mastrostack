@@ -47,8 +47,8 @@ function [x1,y1,x2,y2, p1_orig,p2_orig, p1_axis,p2_axis] = analyse_dist_angles(p
   
   ok1_best = 1; ok2_best = 1; 
   % compute absolute angle values using the same 'origin' as that for distances
-  t1  = atan2( y1-y1(p1_orig), x1-x1(p1_orig))*180/pi;  
-  t2  = atan2( y2-y2(p2_orig), x2-x2(p2_orig))*180/pi;
+  t1  = atan2( y1-y1(p1_orig), x1-x1(p1_orig))*180/pi;  % deg
+  t2  = atan2( y2-y2(p2_orig), x2-x2(p2_orig))*180/pi;  % deg
   for p1=1:numel(x1)
     if p1 == p1_orig, continue; end
     for p2=1:numel(x2)
@@ -56,7 +56,7 @@ function [x1,y1,x2,y2, p1_orig,p2_orig, p1_axis,p2_axis] = analyse_dist_angles(p
       % we try combinations so that angle(axis-orig) is used as reference
       % and other stars angles are measured from that direction.
       % this is then independent of the image rotations.
-      [ok1,ok2] = find_similar(t1-t1(p1), t2-t2(p2), tol_rot*pi/180);
+      [ok1,ok2] = find_similar(t1-t1(p1), t2-t2(p2), tol_rot);
       % the match for distances and angle should coincide
       if numel(ok1) > ok1_best && numel(ok2) > ok2_best 
         ok1_best = numel(ok1); ok2_best = numel(ok2);

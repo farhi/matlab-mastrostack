@@ -11,14 +11,15 @@ function [ret_t, ret_R, theta] = imdiff(self, img1, img2)
       if isempty(img1) || isempty(img2), return; end
       
       % the images should have the same scaling
-      tol_trans = self.toleranceTranslation;
-      tol_rot   = self.toleranceRotation;
+      tol_trans = self.toleranceTranslation;      % in percent
+      tol_trans = tol_trans*min(img2.image_size); % in pixels
+      tol_rot   = self.toleranceRotation;         % in deg
       [x1,y1,x2,y2, p1_orig,p2_orig, p1_axis,p2_axis] = ...
         analyse_dist_angles(img1.points, img2.points, tol_trans, tol_rot);
       
       % get the best similarity
       if ~p1_orig || ~p2_orig || ~p1_axis || ~p2_axis
-        disp([ mfilename ': WARNING: not enough control points for ' img1.id ' ' img2.id ' (axis).' ])
+        disp([ mfilename ': WARNING: not enough common control points for ' img1.id ' ' img2.id ' (axis).' ])
         return
       end
   
@@ -26,14 +27,14 @@ function [ret_t, ret_R, theta] = imdiff(self, img1, img2)
       % distances AND rotations
       p1 = p1_orig; p2=p2_orig;
       d1  = sqrt( (x1-x1(p1)).^2 + (y1-y1(p1)).^2 );
-      t1  = atan2( y1-y1(p1),       x1-x1(p1))*180/pi;
+      t1  = atan2( y1-y1(p1),       x1-x1(p1))*180/pi;  % deg
       d2  = sqrt( (x2-x2(p2)).^2 + (y2-y2(p2)).^2 );
-      t2  = atan2( y2-y2(p2),       x2-x2(p2))*180/pi;
-      [ok1,ok2] = find_similar2(d1,             d2,             tol_trans*img2.image_size(1), ...
-                                t1-t1(p1_axis), t2-t2(p2_axis), tol_rot*pi/180);
+      t2  = atan2( y2-y2(p2),       x2-x2(p2))*180/pi;  % deg
+      [ok1,ok2] = find_similar2(d1,             d2,             tol_trans, ...
+                                t1-t1(p1_axis), t2-t2(p2_axis), tol_rot);
                                 
       if numel(ok1) <= 1 || numel(ok2) <= 1
-        disp([ mfilename ': WARNING: not enough control points for ' img1.id ' ' img2.id ' (common).' ])
+        disp([ mfilename ': WARNING: dist/angle mismatch between control points for ' img1.id ' ' img2.id ' (common).' ])
         return
       end
   
@@ -43,7 +44,7 @@ function [ret_t, ret_R, theta] = imdiff(self, img1, img2)
       ok1(bad) = [];
       ok2(bad) = [];
       if numel(ok1) <= 1 || numel(ok2) <= 1
-        disp([ mfilename ': WARNING: not enough control points for ' img1.id ' ' img2.id ' (common2).' ])
+        disp([ mfilename ': WARNING: angle mismatch between control points for ' img1.id ' ' img2.id ' (common2). Had initially ' num2str(numel(delta)) ' points.'])
         return
       end
   
@@ -64,8 +65,8 @@ function [ret_t, ret_R, theta] = imdiff(self, img1, img2)
       theta1 = t1(p1_axis); % t1(p1_orig) == 0
       theta2 = t2(p2_axis);
       theta = asind(ret_R(1,2));
-      if abs(theta-(theta2-theta1)) > tol_rot/3
-        disp([ mfilename ': WARNING: invalid affine rotation. Skipping.']);
+      if abs(theta-(theta2-theta1)) > tol_rot
+        disp([ mfilename ': WARNING: invalid affine rotation theta=' num2str([theta theta2-theta1]) '. Skipping.']);
         ret_t = [];
         return
       end

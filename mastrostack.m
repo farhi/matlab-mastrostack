@@ -15,8 +15,8 @@ classdef mastrostack < handle
   %   ma = mastrostack(light, dark, flat)
   %     loads light, dark (background) and flat (scope response) images, and label them.
   %
-  % The usual procedure
-  % -------------------
+  % The usual procedure with the User Interface
+  % -------------------------------------------
   %  After imporing the files, you should label them using the Image/Mark as... 
   %  menu items. Then define one of the images as the reference (R). You can navigate
   %  within images with the Image/Goto menu item. 'Bad' images can be skipped (ignored).
@@ -38,7 +38,29 @@ classdef mastrostack < handle
   %
   %  If you have difficulties in stacking (some images do not have enough control
   %  points), relax e.g. the translation tolerance, using the menu item 
-  %  'Compute/Set tolerances'.
+  %  'Compute/Set tolerances'. You can also increase the number of control points.
+  %
+  % The usual procedure with commands
+  % ---------------------------------
+  %
+  % Using commands allow to script/automate the procedure.
+  %
+  %   % create Ma(e)stroStack and import images
+  %   ma=mastrostack;
+  %   [~,img]=imread(ma, 'path/to/darks/*.JPG');
+  %   label(ma, 'dark', img);
+  %   [~,img]=imread(ma, 'path/to/flats/*.JPG');
+  %   label(ma, 'flat', img);
+  %   [~,img]=imread(ma, 'path/to/images/*.JPG');
+  %   label(ma, 'light', img);
+  %
+  %   % compute dark, flat and control points
+  %   getdark(ma);
+  %   getflat(ma);
+  %   cpselect(ma);
+  %
+  %   % stack !! The first 'light' image will be used as Reference for stacking
+  %   stack(ma);
   %
   % Methods
   % -------
@@ -57,12 +79,13 @@ classdef mastrostack < handle
   % mastrostack     create the Ma(e)strostack session
   % plot            plot the user interface and images
   % stack           STACK light images, correcting with dark and flat.
+  % save            save the session
   %
   % (c) E. Farhi, 2018. GPL2.
 
   properties
     toleranceTranslation  = 0.01; % in percent
-    toleranceRotation     = 3;    % in deg
+    toleranceRotation     = 1;    % in deg
     reference             = 0;    % by default the first 'light' image
     figure                = [];
     images = [];
@@ -79,20 +102,13 @@ classdef mastrostack < handle
     %      width
     %      thumbnail
     
-    %      scaling
-    %      ra
-    %      dec
-    %      focal_length
-    %      sensor_width
-    %      sensor_height
-    %      exposureTime
-    
     % the actual image matrices are not stored (except when given as such)
     % as we expect to handle 100's of images.
     dark    = 0;  % stored as a double in [0-1]
     flat    = 0;  % stored as a double in [0-1]
     light   = 0;  % stored as a double in [0-1]
     lightN  = 0;  % stored as a uint16
+    nbControlPoints = 30;
     currentImage = [];  % index of the current image on figure
     dndcontrol = [];
   end % properties
@@ -167,16 +183,16 @@ classdef mastrostack < handle
         
         if isempty(this_img) continue; end  % invalid image
         
-        % store if this is a new image
+        % set image index
         if isnan(found(index))
           this_img.index = numel(self.images)+1;
-          if isempty(self.images)
-            self.images    = this_img;
-          else 
-            self.images(this_img.index) = this_img; 
-          end
         else % update
           this_img.index = found(index);
+        end
+        % store
+        if isempty(self.images)
+          self.images    = this_img;
+        else 
           self.images(this_img.index) = this_img; 
         end
 
@@ -258,6 +274,16 @@ classdef mastrostack < handle
       
     end % exist
     
+    function save(self, filename)
+      % save: save the maestrostack session
+      if nargin < 2, filename = 'mastrostack_session.mat'; end
+      dnd = self.dndcontrol;
+      self.dndcontrol = []; % not serializable
+      builtin(@save, 'self', filename);
+      disp([ mfilename ': saved as ' filename ]);
+      self.dndcontrol = dnd;
+    end 
+    
     % compute stuff ============================================================
     
     function im = getdark(self)
@@ -335,16 +361,16 @@ classdef mastrostack < handle
       if isempty(im), return; end
       im = imdouble(im);
       
+       % correct for read-out/sensor noise (subtract)
+      if ~isempty(self.dark) && ~isscalar(self.dark)
+        im = im - self.dark; % dark is a double
+      end
+      
       % correct for flat field to compensate vigneting (divide)
       if ~isempty(self.flat) && ~isscalar(self.flat)
         for l=1:size(im,3)
           im(:,:,l) = im(:,:,l)./self.flat;
         end
-      end
-      
-      % correct for read-out/sensor noise (subtract)
-      if ~isempty(self.dark) && ~isscalar(self.dark)
-        im = im - self.dark; % dark is a double
       end
 
       im = im2uint(im, cl);
@@ -401,7 +427,7 @@ classdef mastrostack < handle
         % we search for the first 'light' image
         img = [];
         for index=1:numel(self.images)
-          if strcmp(self.images(index).type, 'light')
+          if strcmp(self.images(index).type, 'light') || isempty(self.images(index).type)
             img = self.images(index);
             break
           end
@@ -414,9 +440,11 @@ classdef mastrostack < handle
         fig = build_interface(self);
         
         t = text(0.1,0.5, about(self), 'Units','normalized');
-        
+        xl=[]; yl=[];
       else
         set(0, 'CurrentFigure',fig); % activate but no raise
+        % get current xlim/ylim (to retain any zoom)
+        xl = xlim; yl=ylim;
       end
       self.figure = fig;
       
@@ -449,13 +477,16 @@ classdef mastrostack < handle
         im = imlogscale(im);
       end
       h = image(im);
+      if ~isempty(xl)
+        xlim(xl); ylim(yl);
+      end
       title(t);
 
       % display control points
       hold on
       self.images(self.currentImage).points.handle = scatter(...
         self.images(self.currentImage).points.y, ...
-        self.images(self.currentImage).points.x, 100, 'g', 'x');
+        self.images(self.currentImage).points.x, 100, 'g', 'o');
       hold off
       
     end % plot
@@ -491,13 +522,15 @@ classdef mastrostack < handle
             this_img       = self.images(self.reference);
             self.images(self.reference).type = 'reference';
             disp([ mfilename ':   using reference as ' this_img.id ' (' num2str(index) ')' ])
+            im = correct(self, imread(self, this_img)); % read and correct image
             if isempty(this_img.points) || ~isstruct(this_img.points) || ...
               ~isfield(this_img.points, 'x') || numel(this_img.points.x) < 2
               % compute control points
               disp([ mfilename ':   computing control points for ' this_img.id ' (' num2str(index) ')' ])
-              im = correct(self, imread(self, this_img)); % read and correct image
               this_img = cpselect(self, this_img, im);
             end
+            self.lightN = self.lightN+1;
+            self.light  = imdouble(im);
             if isfield(this_img.exif, 'ExposureTime')
               ExposureTime = ExposureTime + this_img.exif.ExposureTime;
             end
@@ -511,6 +544,7 @@ classdef mastrostack < handle
       wb  = waitbar(0, [ mfilename ': Stacking images (close to abort)...' ]); 
       set(wb, 'Tag', [ mfilename '_waitbar' ]);
       t0 = clock; stackedimages = 0;
+      disp([ mfilename ':   Stacking...' ])
       
       for index=1:numel(self.images)
         this_img = self.images(index);
@@ -540,7 +574,7 @@ classdef mastrostack < handle
           if isempty (ret_t), continue; end
           
           % we read the image and transform it
-          [im,M]  = imaffine(imdouble(im), ret_R, ret_t);
+          [im,M]     = imaffine(imdouble(im), ret_R, ret_t);
           self.lightN= self.lightN+M;
           clear M
           self.light = self.light + im; % add rotated/translated image on the reference
@@ -552,7 +586,7 @@ classdef mastrostack < handle
           end
           
           % compute ETA
-          stackedimages = stackedimages+1;
+          stackedimages= stackedimages+1;
           dt_from0     = etime(clock, t0);
           dt_per_image = dt_from0/stackedimages;
           % remaining images: numel(s)-index
@@ -575,7 +609,7 @@ classdef mastrostack < handle
           end
         end
       end % for
-      disp([ mfilename ': Elapsed time ' num2str(etime(clock, t0)) ' [s]' ])
+      
       disp([ mfilename ': Total exposure on stacked image: ' num2str(ExposureTime) ' [s]' ]);
       delete(findall(0, 'Tag', [ mfilename '_waitbar' ]));
       for index=1:size(self.light,3)
@@ -596,6 +630,7 @@ classdef mastrostack < handle
         filename = fullfile(p, [ this_img.id '.png' ]);
       end
       write_stacked(self.light, filename, this_img.exif);
+      disp([ mfilename ': Stacking DONE. Elapsed time ' num2str(etime(clock, t0)) ' [s]' ])
       
     end % stack
     
@@ -606,7 +641,7 @@ classdef mastrostack < handle
       %   return the translation and rotation of image wrt reference
       [~,img1] = imread(self, img1, 0);
       [~,img2] = imread(self, self.reference, 0);
-      ret_t= []; ret_R = []
+      ret_t= []; ret_R = [];
       if isempty(img1) || isempty(img2), return; end
       if numel(img1.points.x) < 2
         img1 = cpselect(self, img1);
@@ -697,6 +732,7 @@ classdef mastrostack < handle
       if numel(img) > 1
         wb  = waitbar(0, [ mfilename ': Aligning images (close to abort)...' ]); 
         set(wb, 'Tag', [ mfilename '_waitbar' ]);
+        disp([ mfilename ':   Aligning...' ])
       else wb = [];
       end
       t0 = clock; 
@@ -731,7 +767,7 @@ classdef mastrostack < handle
         end
 
         this_img.points = ...
-            find_control_points(rgb2gray(im), 20, self.toleranceTranslation*10);
+            find_control_points(rgb2gray(im), self.nbControlPoints);
         this_img.width  = ...
             sqrt(sum(this_img.points.sx.^2.*this_img.points.sy.^2)) ...
             /numel(this_img.points.sx);
@@ -755,6 +791,11 @@ function ButtonDownCallback(src, evnt, self)
 
   fig = self.figure;
   if ~ishandle(fig), return; end
+  
+  if isempty(self.currentImage) || ...
+      self.currentImage < 1 || self.currentImage > numel(self.images)
+      return
+  end
   
   if strcmp(get(self.figure, 'SelectionType'),'normal') % left click adds a control point
     
@@ -803,7 +844,7 @@ function ButtonDownCallback(src, evnt, self)
   hold on
   self.images(self.currentImage).points.handle = scatter(...
     self.images(self.currentImage).points.y, ...
-    self.images(self.currentImage).points.x, 100, 'g', 'x');
+    self.images(self.currentImage).points.x, 100, 'g', 'o');
   hold off
   
 end % ButtonDownCallback
@@ -974,12 +1015,13 @@ function MenuCallback(src, evnt, self)
     stack(self);
   case 'Align'
     cpselect(self);
-  case 'RETURN'
+  case {'Re-Plot','RETURN'}
     if isempty(self.currentImage) || self.currentImage < 1 ...
       || self.currentImage>numel(self.images)
       self.currentImage = 1;
     end
     plot(self, self.currentImage);
+    axis tight
   case 'Goto image...'
     selection = listdlg(self, 'select image to go to','single');
     if isempty(selection), return; end
@@ -1003,11 +1045,13 @@ function MenuCallback(src, evnt, self)
   case 'Show sharpness'
     figure; plot_sharpness(self.images);
   case 'Set tolerances'
-    prompt={'\bf {\color{blue}Translation} (0-1, e.g 0.01):','\bf {\color{blue}Rotation} [deg, e.g. 3]:'};
+    prompt={'\bf {\color{blue}Translation} (0-1, e.g 0.01):','\bf {\color{blue}Rotation} [deg, e.g. 3]:', ...
+      '\bf {\color{blue}Nb of Control Points} [e.g. 30]:'};
     name=[ mfilename ': Tolerances' ];
     numlines=1;
     defaultanswer={ num2str(self.toleranceTranslation), ...
-                    num2str(self.toleranceRotation) };
+                    num2str(self.toleranceRotation), ...
+                    num2str(self.nbControlPoints) };
     options.Resize='on';
     options.WindowStyle='normal';
     options.Interpreter='tex';
@@ -1081,6 +1125,8 @@ function fig = build_interface(self)
       'Callback', {@MenuCallback, self },'Accelerator','i');
     uimenu(m, 'Label', 'Mark as Reference image',        ...
       'Callback', {@MenuCallback, self },'Accelerator','r');
+    uimenu(m, 'Label', 'Re-Plot',        ...
+      'Callback', {@MenuCallback, self });
     uimenu(m, 'Label', 'Show in log scale',        ...
       'Callback', {@MenuCallback, self });
     uimenu(m, 'Label', 'Next image', 'Separator','on',       ...
