@@ -475,6 +475,12 @@ classdef mastrostack < handle
       end
     end % about
     
+    function url=help(self)
+      % help(self): open the Help page
+      url = fullfile('file:///',fileparts(which(mfilename)),'doc','mastrostack.html');
+      open_system_browser(url);
+    end
+    
     function h=plot(self, img, im)
       % plot: plot images
       %
@@ -1165,6 +1171,8 @@ function MenuCallback(src, evnt, self)
     end
   case 'About'
     about(self);
+  case 'Help'
+    help(self);
   otherwise
     disp([ mfilename ': unknown action ' action ])
   end
@@ -1246,6 +1254,8 @@ function fig = build_interface(self)
       'Callback', {@MenuCallback, self });
       
     m = uimenu(fig, 'Label', 'Help');
+    uimenu(m, 'Label', 'Help',        ...
+      'Callback', {@MenuCallback, self });
     uimenu(m, 'Label', 'About',        ...
       'Callback', {@MenuCallback, self });
     
