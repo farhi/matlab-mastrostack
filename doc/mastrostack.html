@@ -6,19 +6,63 @@
     <title>Empty Web Page</title>
   </head>
   <body>
-    Ma(e)stroStack: a class to automatically align and stack
-    astro-photography images<br>
-    <br>
-    Scope<br>
-    <br>
-    After importing images (see below), the stacked image is computed,
-    using the<br>
-    &nbsp;&nbsp; dark and flat images for correction. All images are
-    aligned on a reference, <br>
-    &nbsp;&nbsp; and added with sub-pixel resolution.<br>
-    <br>
     <meta http-equiv="content-type" content="text/html;
       charset=windows-1252">
+    <h1 style="box-sizing: border-box; font-size: 2em; margin-top: 0px
+      !important; margin-right: 0px; margin-bottom: 16px; margin-left:
+      0px; font-weight: 600; line-height: 1.25; padding-bottom: 0.3em;
+      border-bottom: 1px solid rgb(234, 236, 239); color: rgb(36, 41,
+      46); font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe
+      UI&quot;, Helvetica, Arial, sans-serif, &quot;Apple Color
+      Emoji&quot;, &quot;Segoe UI Emoji&quot;, &quot;Segoe UI
+      Symbol&quot;; font-style: normal; font-variant-ligatures: normal;
+      font-variant-caps: normal; letter-spacing: normal; orphans: 2;
+      text-align: start; text-indent: 0px; text-transform: none;
+      white-space: normal; widows: 2; word-spacing: 0px;
+      -webkit-text-stroke-width: 0px; text-decoration-style: initial;
+      text-decoration-color: initial;">matlab-mastrostack</h1>
+    <p style="box-sizing: border-box; margin-top: 0px; margin-bottom:
+      16px; color: rgb(36, 41, 46); font-family: -apple-system,
+      BlinkMacSystemFont, &quot;Segoe UI&quot;, Helvetica, Arial,
+      sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI
+      Emoji&quot;, &quot;Segoe UI Symbol&quot;; font-size: 16px;
+      font-style: normal; font-variant-ligatures: normal;
+      font-variant-caps: normal; font-weight: 400; letter-spacing:
+      normal; orphans: 2; text-align: start; text-indent: 0px;
+      text-transform: none; white-space: normal; widows: 2;
+      word-spacing: 0px; -webkit-text-stroke-width: 0px;
+      text-decoration-style: initial; text-decoration-color: initial;">Ma(e)stroStack:
+      a Matlab class to automatically align and stack astro-photography
+      images<br>
+    </p>
+    <div align="center"><img alt="mastrostack" title="mastrostack"
+        src="mastrostack.png" height="505" width="559"></div>
+    <h2 style="box-sizing: border-box; margin-top: 24px; margin-bottom:
+      16px; font-size: 1.5em; font-weight: 600; line-height: 1.25;
+      padding-bottom: 0.3em; border-bottom: 1px solid rgb(234, 236,
+      239); color: rgb(36, 41, 46); font-family: -apple-system,
+      BlinkMacSystemFont, &quot;Segoe UI&quot;, Helvetica, Arial,
+      sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI
+      Emoji&quot;, &quot;Segoe UI Symbol&quot;; font-style: normal;
+      font-variant-ligatures: normal; font-variant-caps: normal;
+      letter-spacing: normal; orphans: 2; text-align: start;
+      text-indent: 0px; text-transform: none; white-space: normal;
+      widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px;
+      text-decoration-style: initial; text-decoration-color: initial;"><a
+        id="user-content-purpose" class="anchor" aria-hidden="true"
+        href="https://github.com/farhi/matlab-mastrostack#purpose"
+        style="box-sizing: border-box; background-color: transparent;
+        color: rgb(3, 102, 214); text-decoration: none; float: left;
+        padding-right: 4px; margin-left: -20px; line-height: 1;"><svg
+          class="octicon octicon-link" viewBox="0 0 16 16" version="1.1"
+          width="16" height="16" aria-hidden="true"><path
+            fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3
+            4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2
+            3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98
+            0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12
+            13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64
+            1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9
+            13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Purpose</h2>
     <p style="box-sizing: border-box; margin-top: 0px; margin-bottom:
       16px; color: rgb(36, 41, 46); font-family: -apple-system,
       BlinkMacSystemFont, &quot;Segoe UI&quot;, Helvetica, Arial,
@@ -30,27 +74,14 @@
       text-transform: none; white-space: normal; widows: 2;
       word-spacing: 0px; -webkit-text-stroke-width: 0px;
       text-decoration-style: initial; text-decoration-color: initial;">This
-      function (for Matlab/Octave) gets a list of images, and
-      automatically determines bright stars as control points. These are
-      followed along pictures, and used to build an affine
-      transformation at constant scale (e.g. a rotation and
-      translation). All images are stacked over the first image used as
-      reference. The images can be given as file names (may include
-      wildcards), or matrices from e.g. imread, and support both RGB and
-      gray images.</p>
-    <p style="box-sizing: border-box; margin-top: 0px; margin-bottom:
-      16px; color: rgb(36, 41, 46); font-family: -apple-system,
-      BlinkMacSystemFont, &quot;Segoe UI&quot;, Helvetica, Arial,
-      sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI
-      Emoji&quot;, &quot;Segoe UI Symbol&quot;; font-size: 16px;
-      font-style: normal; font-variant-ligatures: normal;
-      font-variant-caps: normal; font-weight: 400; letter-spacing:
-      normal; orphans: 2; text-align: start; text-indent: 0px;
-      text-transform: none; white-space: normal; widows: 2;
-      word-spacing: 0px; -webkit-text-stroke-width: 0px;
-      text-decoration-style: initial; text-decoration-color: initial;">As
-      stars are used for the alignment, this method is suited for deep
-      sky images, but not for planetary imaging.</p>
+      class gets a list of images, and automatically determines bright
+      stars as control points. These are followed along pictures, and
+      used to build an affine transformation at constant scale (e.g. a
+      rotation and translation). All images are then stacked. The images
+      can be given as file names (may include wildcards), or matrices
+      from e.g. imread, and support both RGB and gray images. As stars
+      are used for the alignment, this method is suited for deep sky
+      images, but not for planetary imaging.</p>
     <p style="box-sizing: border-box; margin-top: 0px; margin-bottom:
       16px; color: rgb(36, 41, 46); font-family: -apple-system,
       BlinkMacSystemFont, &quot;Segoe UI&quot;, Helvetica, Arial,
@@ -63,9 +94,8 @@
       word-spacing: 0px; -webkit-text-stroke-width: 0px;
       text-decoration-style: initial; text-decoration-color: initial;">This
       function does not make use of the phase correlation technique, but
-      operates directly on the raw images. It assumes that at least two
-      bright<br style="box-sizing: border-box;">
-      stars remain on each picture, but tolerate translations and
+      operates directly on the images. It assumes that at least two
+      bright stars remain on each picture, but tolerate translations and
       rotations, as well as stars/control points that appear/disappear
       on the field of view. The procedure also ignores very sharp peaks,
       assuming they originate from dead pixels (and would then be static
@@ -81,11 +111,12 @@
       text-transform: none; white-space: normal; widows: 2;
       word-spacing: 0px; -webkit-text-stroke-width: 0px;
       text-decoration-style: initial; text-decoration-color: initial;">It
-      is highly recommended to specify a 'dark' frame filename, which
-      will be subtracted to all images, in order to e.g. remove most
-      hot/dead pixels. To get such a 'dark', use your camera alone and
-      shot once with the cap on, same settings as the other pictures
-      (duration, ISO). Image should be full black.</p>
+      is highly recommended to specify a<span>&nbsp;</span><strong
+        style="box-sizing: border-box; font-weight: 600;">dark</strong><span>&nbsp;</span>frame
+      filename, which will be subtracted to all images, in order to e.g.
+      remove most hot/dead pixels. To get such a 'dark', use your camera
+      alone and shot once with the cap on, same settings as the other
+      pictures (duration, ISO). Image should be full black.</p>
     <p style="box-sizing: border-box; margin-top: 0px; margin-bottom:
       16px; color: rgb(36, 41, 46); font-family: -apple-system,
       BlinkMacSystemFont, &quot;Segoe UI&quot;, Helvetica, Arial,
@@ -97,56 +128,13 @@
       text-transform: none; white-space: normal; widows: 2;
       word-spacing: 0px; -webkit-text-stroke-width: 0px;
       text-decoration-style: initial; text-decoration-color: initial;">You
-      may as well specify a 'flat' frame filename, which will be divided
-      to all images, in order to counter vignetting (darker borders). To
-      get such a 'flat', shot once with the scope pointing at a uniform
-      view (sky, white wall). Adapt the duration so that you get a
-      rather gray image (not full black or white).</p>
-    <p style="box-sizing: border-box; margin-top: 0px; margin-bottom:
-      16px; color: rgb(36, 41, 46); font-family: -apple-system,
-      BlinkMacSystemFont, &quot;Segoe UI&quot;, Helvetica, Arial,
-      sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI
-      Emoji&quot;, &quot;Segoe UI Symbol&quot;; font-size: 16px;
-      font-style: normal; font-variant-ligatures: normal;
-      font-variant-caps: normal; font-weight: 400; letter-spacing:
-      normal; orphans: 2; text-align: start; text-indent: 0px;
-      text-transform: none; white-space: normal; widows: 2;
-      word-spacing: 0px; -webkit-text-stroke-width: 0px;
-      text-decoration-style: initial; text-decoration-color: initial;">During
-      the procedure, the current image and its stars/control points are
-      indicated, as well as the stacked image. A waitbar indicates the
-      progress. To abort the procedure, close the waitbar. The stacked
-      image so far will be saved and returned. Supported image formats
-      include JPG, PNG, TIFF, FITS.</p>
-    <p style="box-sizing: border-box; margin-top: 0px; margin-bottom:
-      16px; color: rgb(36, 41, 46); font-family: -apple-system,
-      BlinkMacSystemFont, &quot;Segoe UI&quot;, Helvetica, Arial,
-      sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI
-      Emoji&quot;, &quot;Segoe UI Symbol&quot;; font-size: 16px;
-      font-style: normal; font-variant-ligatures: normal;
-      font-variant-caps: normal; font-weight: 400; letter-spacing:
-      normal; orphans: 2; text-align: start; text-indent: 0px;
-      text-transform: none; white-space: normal; widows: 2;
-      word-spacing: 0px; -webkit-text-stroke-width: 0px;
-      text-decoration-style: initial; text-decoration-color: initial;">The
-      resulting stacked image is stored using the first/reference image
-      name, adding '_stacked', in the PNG format. This routine can stack
-      a hundred 4k images within 15 minutes. Memory requirements are
-      about 2Gb for 4k images.</p>
-    <p style="box-sizing: border-box; margin-top: 0px; margin-bottom:
-      16px; color: rgb(36, 41, 46); font-family: -apple-system,
-      BlinkMacSystemFont, &quot;Segoe UI&quot;, Helvetica, Arial,
-      sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI
-      Emoji&quot;, &quot;Segoe UI Symbol&quot;; font-size: 16px;
-      font-style: normal; font-variant-ligatures: normal;
-      font-variant-caps: normal; font-weight: 400; letter-spacing:
-      normal; orphans: 2; text-align: start; text-indent: 0px;
-      text-transform: none; white-space: normal; widows: 2;
-      word-spacing: 0px; -webkit-text-stroke-width: 0px;
-      text-decoration-style: initial; text-decoration-color: initial;">We
-      recommend that you further use DarkTable or RawTherapee to enhance
-      the low intensity features (black, brightness, contrast).<br>
-    </p>
+      may as well specify a<span>&nbsp;</span><strong style="box-sizing:
+        border-box; font-weight: 600;">flat</strong><span>&nbsp;</span>frame
+      filename, which will be divided to all images, in order to counter
+      vignetting (darker borders). To get such a 'flat', shot once with
+      the scope pointing at a uniform view (sky, white wall). Adapt the
+      duration so that you get a rather gray image (not full black or
+      white).</p>
     <h2 style="box-sizing: border-box; margin-top: 24px; margin-bottom:
       16px; font-size: 1.5em; font-weight: 600; line-height: 1.25;
       padding-bottom: 0.3em; border-bottom: 1px solid rgb(234, 236,
@@ -158,7 +146,150 @@
       letter-spacing: normal; orphans: 2; text-align: start;
       text-indent: 0px; text-transform: none; white-space: normal;
       widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px;
-      text-decoration-style: initial; text-decoration-color: initial;">Syntax</h2>
+      text-decoration-style: initial; text-decoration-color: initial;"><a
+        id="user-content-syntax" class="anchor" aria-hidden="true"
+        href="https://github.com/farhi/matlab-mastrostack#syntax"
+        style="box-sizing: border-box; background-color: transparent;
+        color: rgb(3, 102, 214); text-decoration: none; float: left;
+        padding-right: 4px; margin-left: -20px; line-height: 1;"><svg
+          class="octicon octicon-link" viewBox="0 0 16 16" version="1.1"
+          width="16" height="16" aria-hidden="true"><path
+            fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3
+            4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2
+            3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98
+            0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12
+            13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64
+            1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9
+            13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Syntax</h2>
+    <p style="box-sizing: border-box; margin-top: 0px; margin-bottom:
+      16px; color: rgb(36, 41, 46); font-family: -apple-system,
+      BlinkMacSystemFont, &quot;Segoe UI&quot;, Helvetica, Arial,
+      sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI
+      Emoji&quot;, &quot;Segoe UI Symbol&quot;; font-size: 16px;
+      font-style: normal; font-variant-ligatures: normal;
+      font-variant-caps: normal; font-weight: 400; letter-spacing:
+      normal; orphans: 2; text-align: start; text-indent: 0px;
+      text-transform: none; white-space: normal; widows: 2;
+      word-spacing: 0px; -webkit-text-stroke-width: 0px;
+      text-decoration-style: initial; text-decoration-color: initial;"><strong
+        style="box-sizing: border-box; font-weight: 600;">ma =
+        mastrostack;</strong></p>
+    <p style="box-sizing: border-box; margin-top: 0px; margin-bottom:
+      16px; color: rgb(36, 41, 46); font-family: -apple-system,
+      BlinkMacSystemFont, &quot;Segoe UI&quot;, Helvetica, Arial,
+      sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI
+      Emoji&quot;, &quot;Segoe UI Symbol&quot;; font-size: 16px;
+      font-style: normal; font-variant-ligatures: normal;
+      font-variant-caps: normal; font-weight: 400; letter-spacing:
+      normal; orphans: 2; text-align: start; text-indent: 0px;
+      text-transform: none; white-space: normal; widows: 2;
+      word-spacing: 0px; -webkit-text-stroke-width: 0px;
+      text-decoration-style: initial; text-decoration-color: initial;">start
+      the user interface</p>
+    <p style="box-sizing: border-box; margin-top: 0px; margin-bottom:
+      16px; color: rgb(36, 41, 46); font-family: -apple-system,
+      BlinkMacSystemFont, &quot;Segoe UI&quot;, Helvetica, Arial,
+      sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI
+      Emoji&quot;, &quot;Segoe UI Symbol&quot;; font-size: 16px;
+      font-style: normal; font-variant-ligatures: normal;
+      font-variant-caps: normal; font-weight: 400; letter-spacing:
+      normal; orphans: 2; text-align: start; text-indent: 0px;
+      text-transform: none; white-space: normal; widows: 2;
+      word-spacing: 0px; -webkit-text-stroke-width: 0px;
+      text-decoration-style: initial; text-decoration-color: initial;"><strong
+        style="box-sizing: border-box; font-weight: 600;">ma =
+        mastrostack(images)</strong></p>
+    <p style="box-sizing: border-box; margin-top: 0px; margin-bottom:
+      16px; color: rgb(36, 41, 46); font-family: -apple-system,
+      BlinkMacSystemFont, &quot;Segoe UI&quot;, Helvetica, Arial,
+      sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI
+      Emoji&quot;, &quot;Segoe UI Symbol&quot;; font-size: 16px;
+      font-style: normal; font-variant-ligatures: normal;
+      font-variant-caps: normal; font-weight: 400; letter-spacing:
+      normal; orphans: 2; text-align: start; text-indent: 0px;
+      text-transform: none; white-space: normal; widows: 2;
+      word-spacing: 0px; -webkit-text-stroke-width: 0px;
+      text-decoration-style: initial; text-decoration-color: initial;">loads
+      images without setting their type</p>
+    <p style="box-sizing: border-box; margin-top: 0px; margin-bottom:
+      16px; color: rgb(36, 41, 46); font-family: -apple-system,
+      BlinkMacSystemFont, &quot;Segoe UI&quot;, Helvetica, Arial,
+      sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI
+      Emoji&quot;, &quot;Segoe UI Symbol&quot;; font-size: 16px;
+      font-style: normal; font-variant-ligatures: normal;
+      font-variant-caps: normal; font-weight: 400; letter-spacing:
+      normal; orphans: 2; text-align: start; text-indent: 0px;
+      text-transform: none; white-space: normal; widows: 2;
+      word-spacing: 0px; -webkit-text-stroke-width: 0px;
+      text-decoration-style: initial; text-decoration-color: initial;"><strong
+        style="box-sizing: border-box; font-weight: 600;">ma =
+        mastrostack(light, dark)</strong></p>
+    <p style="box-sizing: border-box; margin-top: 0px; margin-bottom:
+      16px; color: rgb(36, 41, 46); font-family: -apple-system,
+      BlinkMacSystemFont, &quot;Segoe UI&quot;, Helvetica, Arial,
+      sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI
+      Emoji&quot;, &quot;Segoe UI Symbol&quot;; font-size: 16px;
+      font-style: normal; font-variant-ligatures: normal;
+      font-variant-caps: normal; font-weight: 400; letter-spacing:
+      normal; orphans: 2; text-align: start; text-indent: 0px;
+      text-transform: none; white-space: normal; widows: 2;
+      word-spacing: 0px; -webkit-text-stroke-width: 0px;
+      text-decoration-style: initial; text-decoration-color: initial;"><strong
+        style="box-sizing: border-box; font-weight: 600;">ma =
+        mastrostack(light, dark, flat)</strong></p>
+    <p style="box-sizing: border-box; margin-top: 0px; margin-bottom:
+      16px; color: rgb(36, 41, 46); font-family: -apple-system,
+      BlinkMacSystemFont, &quot;Segoe UI&quot;, Helvetica, Arial,
+      sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI
+      Emoji&quot;, &quot;Segoe UI Symbol&quot;; font-size: 16px;
+      font-style: normal; font-variant-ligatures: normal;
+      font-variant-caps: normal; font-weight: 400; letter-spacing:
+      normal; orphans: 2; text-align: start; text-indent: 0px;
+      text-transform: none; white-space: normal; widows: 2;
+      word-spacing: 0px; -webkit-text-stroke-width: 0px;
+      text-decoration-style: initial; text-decoration-color: initial;">loads
+      light, dark (background) and flat (scope response) images, and
+      label them.</p>
+    <h2 style="box-sizing: border-box; margin-top: 24px; margin-bottom:
+      16px; font-size: 1.5em; font-weight: 600; line-height: 1.25;
+      padding-bottom: 0.3em; border-bottom: 1px solid rgb(234, 236,
+      239); color: rgb(36, 41, 46); font-family: -apple-system,
+      BlinkMacSystemFont, &quot;Segoe UI&quot;, Helvetica, Arial,
+      sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI
+      Emoji&quot;, &quot;Segoe UI Symbol&quot;; font-style: normal;
+      font-variant-ligatures: normal; font-variant-caps: normal;
+      letter-spacing: normal; orphans: 2; text-align: start;
+      text-indent: 0px; text-transform: none; white-space: normal;
+      widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px;
+      text-decoration-style: initial; text-decoration-color: initial;"><a
+        id="user-content-importing-images" class="anchor"
+        aria-hidden="true"
+        href="https://github.com/farhi/matlab-mastrostack#importing-images"
+        style="box-sizing: border-box; background-color: transparent;
+        color: rgb(3, 102, 214); text-decoration: none; float: left;
+        padding-right: 4px; margin-left: -20px; line-height: 1;"><svg
+          class="octicon octicon-link" viewBox="0 0 16 16" version="1.1"
+          width="16" height="16" aria-hidden="true"><path
+            fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3
+            4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2
+            3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98
+            0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12
+            13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64
+            1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9
+            13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Importing
+      images</h2>
+    <p style="box-sizing: border-box; margin-top: 0px; margin-bottom:
+      16px; color: rgb(36, 41, 46); font-family: -apple-system,
+      BlinkMacSystemFont, &quot;Segoe UI&quot;, Helvetica, Arial,
+      sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI
+      Emoji&quot;, &quot;Segoe UI Symbol&quot;; font-size: 16px;
+      font-style: normal; font-variant-ligatures: normal;
+      font-variant-caps: normal; font-weight: 400; letter-spacing:
+      normal; orphans: 2; text-align: start; text-indent: 0px;
+      text-transform: none; white-space: normal; widows: 2;
+      word-spacing: 0px; -webkit-text-stroke-width: 0px;
+      text-decoration-style: initial; text-decoration-color: initial;">Start
+      with:</p>
     <div class="highlight highlight-source-matlab" style="box-sizing:
       border-box; margin-bottom: 16px; color: rgb(36, 41, 46);
       font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe
@@ -171,8 +302,7 @@
       normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width:
       0px; text-decoration-style: initial; text-decoration-color:
       initial;">
-      <pre style="box-sizing: border-box; font-family: SFMono-Regular, Consolas, &quot;Liberation Mono&quot;, Menlo, Courier, monospace; font-size: 13.6px; margin-top: 0px; margin-bottom: 0px; word-wrap: normal; padding: 16px; overflow: auto; line-height: 1.45; background-color: rgb(246, 248, 250); border-radius: 3px; word-break: normal;">&gt;&gt; [stacked, output] = mastrostack(images, dark, flat)
-&gt;&gt; stacked = mastrostack;</pre>
+      <pre style="box-sizing: border-box; font-family: SFMono-Regular, Consolas, &quot;Liberation Mono&quot;, Menlo, Courier, monospace; font-size: 13.6px; margin-top: 0px; margin-bottom: 0px; word-wrap: normal; padding: 16px; overflow: auto; line-height: 1.45; background-color: rgb(246, 248, 250); border-radius: 3px; word-break: normal;">  ma=mastrostack;</pre>
     </div>
     <p style="box-sizing: border-box; margin-top: 0px; margin-bottom:
       16px; color: rgb(36, 41, 46); font-family: -apple-system,
@@ -184,8 +314,13 @@
       normal; orphans: 2; text-align: start; text-indent: 0px;
       text-transform: none; white-space: normal; widows: 2;
       word-spacing: 0px; -webkit-text-stroke-width: 0px;
-      text-decoration-style: initial; text-decoration-color: initial;"><br>
-    </p>
+      text-decoration-style: initial; text-decoration-color: initial;">Then
+      press the Return key on the main interface. A<span>&nbsp;</span><strong
+        style="box-sizing: border-box; font-weight: 600;">Drop Files
+        Here</strong><span>&nbsp;</span>button appears in the lower left
+      side. Drag and drop your Dark, Flat and Light images there. Images
+      having 'dark' or 'flat' in their path/file name are marked as such
+      automatically. You may alternatively use the File menu items.</p>
     <p style="box-sizing: border-box; margin-top: 0px; margin-bottom:
       16px; color: rgb(36, 41, 46); font-family: -apple-system,
       BlinkMacSystemFont, &quot;Segoe UI&quot;, Helvetica, Arial,
@@ -196,22 +331,292 @@
       normal; orphans: 2; text-align: start; text-indent: 0px;
       text-transform: none; white-space: normal; widows: 2;
       word-spacing: 0px; -webkit-text-stroke-width: 0px;
-      text-decoration-style: initial; text-decoration-color: initial;">ma
-      = mastrostack;<br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; start the user interface, without
-      loading images (can be done afterwards)<br>
-      &nbsp;&nbsp;&nbsp; ma = mastrostack(images)<br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; loads images without setting their
-      type<br>
-      &nbsp;&nbsp;&nbsp; ma = mastrostack(light, dark)<br>
-      &nbsp;&nbsp;&nbsp; ma = mastrostack(light, dark, flat)<br>
-      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; loads light, dark (background) and
-      flat (scope response) images, and label them.<br>
-      &nbsp;<br>
-    </p>
-    Input<br>
-    <meta http-equiv="content-type" content="text/html;
-      charset=windows-1252">
+      text-decoration-style: initial; text-decoration-color: initial;">Supported
+      image formats include JPG, PNG, TIFF, FITS. If you have installed<span>&nbsp;</span><strong
+        style="box-sizing: border-box; font-weight: 600;">readraw</strong>,
+      you may as well directly import RAW camera images. This is highly
+      recommended, as it retains much more information from the camera
+      shot than the generated JPEG images, which prooves to be essential
+      for subtracting the Dark image (background), and revealing faint
+      objects.</p>
+    <h2 style="box-sizing: border-box; margin-top: 24px; margin-bottom:
+      16px; font-size: 1.5em; font-weight: 600; line-height: 1.25;
+      padding-bottom: 0.3em; border-bottom: 1px solid rgb(234, 236,
+      239); color: rgb(36, 41, 46); font-family: -apple-system,
+      BlinkMacSystemFont, &quot;Segoe UI&quot;, Helvetica, Arial,
+      sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI
+      Emoji&quot;, &quot;Segoe UI Symbol&quot;; font-style: normal;
+      font-variant-ligatures: normal; font-variant-caps: normal;
+      letter-spacing: normal; orphans: 2; text-align: start;
+      text-indent: 0px; text-transform: none; white-space: normal;
+      widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px;
+      text-decoration-style: initial; text-decoration-color: initial;"><a
+        id="user-content-preparing-the-stacking" class="anchor"
+        aria-hidden="true"
+href="https://github.com/farhi/matlab-mastrostack#preparing-the-stacking"
+        style="box-sizing: border-box; background-color: transparent;
+        color: rgb(3, 102, 214); text-decoration: none; float: left;
+        padding-right: 4px; margin-left: -20px; line-height: 1;"><svg
+          class="octicon octicon-link" viewBox="0 0 16 16" version="1.1"
+          width="16" height="16" aria-hidden="true"><path
+            fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3
+            4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2
+            3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98
+            0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12
+            13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64
+            1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9
+            13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Preparing
+      the Stacking</h2>
+    <p style="box-sizing: border-box; margin-top: 0px; margin-bottom:
+      16px; color: rgb(36, 41, 46); font-family: -apple-system,
+      BlinkMacSystemFont, &quot;Segoe UI&quot;, Helvetica, Arial,
+      sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI
+      Emoji&quot;, &quot;Segoe UI Symbol&quot;; font-size: 16px;
+      font-style: normal; font-variant-ligatures: normal;
+      font-variant-caps: normal; font-weight: 400; letter-spacing:
+      normal; orphans: 2; text-align: start; text-indent: 0px;
+      text-transform: none; white-space: normal; widows: 2;
+      word-spacing: 0px; -webkit-text-stroke-width: 0px;
+      text-decoration-style: initial; text-decoration-color: initial;">After
+      importing the files, you should label them using the 'Image/Mark
+      as...' menu items. You can navigate within images with the
+      Image/Goto menu item, and the arrow keys, or the mouse wheel.
+      'Bad' images can be skipped (ignored). To use them back, set their
+      type to 'light'. You should then compute the master Dark and Flat
+      images (Compute menu).</p>
+    <p style="box-sizing: border-box; margin-top: 0px; margin-bottom:
+      16px; color: rgb(36, 41, 46); font-family: -apple-system,
+      BlinkMacSystemFont, &quot;Segoe UI&quot;, Helvetica, Arial,
+      sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI
+      Emoji&quot;, &quot;Segoe UI Symbol&quot;; font-size: 16px;
+      font-style: normal; font-variant-ligatures: normal;
+      font-variant-caps: normal; font-weight: 400; letter-spacing:
+      normal; orphans: 2; text-align: start; text-indent: 0px;
+      text-transform: none; white-space: normal; widows: 2;
+      word-spacing: 0px; -webkit-text-stroke-width: 0px;
+      text-decoration-style: initial; text-decoration-color: initial;">It
+      is recommended to zoom onto specific features (e.g. a set of
+      stars) to check visually for their sharpness. Deselect the Zoom
+      tool, and scan through images using the left arrow key, and press
+      the 'I' key to mark images to be ignored, such as those blurred.
+      To reset the plot, press the Return key.</p>
+    <p style="box-sizing: border-box; margin-top: 0px; margin-bottom:
+      16px; color: rgb(36, 41, 46); font-family: -apple-system,
+      BlinkMacSystemFont, &quot;Segoe UI&quot;, Helvetica, Arial,
+      sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI
+      Emoji&quot;, &quot;Segoe UI Symbol&quot;; font-size: 16px;
+      font-style: normal; font-variant-ligatures: normal;
+      font-variant-caps: normal; font-weight: 400; letter-spacing:
+      normal; orphans: 2; text-align: start; text-indent: 0px;
+      text-transform: none; white-space: normal; widows: 2;
+      word-spacing: 0px; -webkit-text-stroke-width: 0px;
+      text-decoration-style: initial; text-decoration-color: initial;">You
+      can select the Reference image, which will be used as template for
+      stacking. If not defined, the first image in the list will be used
+      as such when stacking.</p>
+    <p style="box-sizing: border-box; margin-top: 0px; margin-bottom:
+      16px; color: rgb(36, 41, 46); font-family: -apple-system,
+      BlinkMacSystemFont, &quot;Segoe UI&quot;, Helvetica, Arial,
+      sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI
+      Emoji&quot;, &quot;Segoe UI Symbol&quot;; font-size: 16px;
+      font-style: normal; font-variant-ligatures: normal;
+      font-variant-caps: normal; font-weight: 400; letter-spacing:
+      normal; orphans: 2; text-align: start; text-indent: 0px;
+      text-transform: none; white-space: normal; widows: 2;
+      word-spacing: 0px; -webkit-text-stroke-width: 0px;
+      text-decoration-style: initial; text-decoration-color: initial;">Optionally,
+      use the Compute/Align item to compute the images control points
+      (stars) which also corrects for background and scope response when
+      dark and flat are defined. This procedure computes a metric to
+      quantify the sharpness. You may then select the 'Compute/Show
+      sharpness' menu item which metric is highest for clearer images,
+      and low for blurred/moved ones. The axis is the image index. To
+      automatically select best images, use the menu item
+      'Compute/Select on sharpness' and set a threshold. All images
+      above will be selected, and those below will be marked as 'skip'.
+      This automatic procedure is not optimal, and a manual check, as
+      above, should be preferred.</p>
+    <h2 style="box-sizing: border-box; margin-top: 24px; margin-bottom:
+      16px; font-size: 1.5em; font-weight: 600; line-height: 1.25;
+      padding-bottom: 0.3em; border-bottom: 1px solid rgb(234, 236,
+      239); color: rgb(36, 41, 46); font-family: -apple-system,
+      BlinkMacSystemFont, &quot;Segoe UI&quot;, Helvetica, Arial,
+      sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI
+      Emoji&quot;, &quot;Segoe UI Symbol&quot;; font-style: normal;
+      font-variant-ligatures: normal; font-variant-caps: normal;
+      letter-spacing: normal; orphans: 2; text-align: start;
+      text-indent: 0px; text-transform: none; white-space: normal;
+      widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px;
+      text-decoration-style: initial; text-decoration-color: initial;"><a
+        id="user-content-stacking" class="anchor" aria-hidden="true"
+        href="https://github.com/farhi/matlab-mastrostack#stacking"
+        style="box-sizing: border-box; background-color: transparent;
+        color: rgb(3, 102, 214); text-decoration: none; float: left;
+        padding-right: 4px; margin-left: -20px; line-height: 1;"><svg
+          class="octicon octicon-link" viewBox="0 0 16 16" version="1.1"
+          width="16" height="16" aria-hidden="true"><path
+            fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3
+            4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2
+            3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98
+            0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12
+            13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64
+            1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9
+            13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Stacking</h2>
+    <p style="box-sizing: border-box; margin-top: 0px; margin-bottom:
+      16px; color: rgb(36, 41, 46); font-family: -apple-system,
+      BlinkMacSystemFont, &quot;Segoe UI&quot;, Helvetica, Arial,
+      sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI
+      Emoji&quot;, &quot;Segoe UI Symbol&quot;; font-size: 16px;
+      font-style: normal; font-variant-ligatures: normal;
+      font-variant-caps: normal; font-weight: 400; letter-spacing:
+      normal; orphans: 2; text-align: start; text-indent: 0px;
+      text-transform: none; white-space: normal; widows: 2;
+      word-spacing: 0px; -webkit-text-stroke-width: 0px;
+      text-decoration-style: initial; text-decoration-color: initial;">When
+      ready, use the Compute/Stack menu item. If the Alignment has not
+      been executed previously, it is achieved for each image. The final
+      image is then shown and written to disk. Use e.g. Lightroom,
+      RawTherapee, DarkTable to enhance contrast.</p>
+    <h2 style="box-sizing: border-box; margin-top: 24px; margin-bottom:
+      16px; font-size: 1.5em; font-weight: 600; line-height: 1.25;
+      padding-bottom: 0.3em; border-bottom: 1px solid rgb(234, 236,
+      239); color: rgb(36, 41, 46); font-family: -apple-system,
+      BlinkMacSystemFont, &quot;Segoe UI&quot;, Helvetica, Arial,
+      sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI
+      Emoji&quot;, &quot;Segoe UI Symbol&quot;; font-style: normal;
+      font-variant-ligatures: normal; font-variant-caps: normal;
+      letter-spacing: normal; orphans: 2; text-align: start;
+      text-indent: 0px; text-transform: none; white-space: normal;
+      widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px;
+      text-decoration-style: initial; text-decoration-color: initial;"><a
+        id="user-content-notes" class="anchor" aria-hidden="true"
+        href="https://github.com/farhi/matlab-mastrostack#notes"
+        style="box-sizing: border-box; background-color: transparent;
+        color: rgb(3, 102, 214); text-decoration: none; float: left;
+        padding-right: 4px; margin-left: -20px; line-height: 1;"><svg
+          class="octicon octicon-link" viewBox="0 0 16 16" version="1.1"
+          width="16" height="16" aria-hidden="true"><path
+            fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3
+            4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2
+            3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98
+            0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12
+            13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64
+            1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9
+            13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Notes</h2>
+    <p style="box-sizing: border-box; margin-top: 0px; margin-bottom:
+      16px; color: rgb(36, 41, 46); font-family: -apple-system,
+      BlinkMacSystemFont, &quot;Segoe UI&quot;, Helvetica, Arial,
+      sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI
+      Emoji&quot;, &quot;Segoe UI Symbol&quot;; font-size: 16px;
+      font-style: normal; font-variant-ligatures: normal;
+      font-variant-caps: normal; font-weight: 400; letter-spacing:
+      normal; orphans: 2; text-align: start; text-indent: 0px;
+      text-transform: none; white-space: normal; widows: 2;
+      word-spacing: 0px; -webkit-text-stroke-width: 0px;
+      text-decoration-style: initial; text-decoration-color: initial;">If
+      you have difficulties in stacking (some images do not have enough
+      control points), relax e.g. the translation tolerance, using the
+      menu item 'Compute/Set tolerances'. You can also increase the
+      number of control points. In case the main interface is closed,
+      get it back with</p>
+    <div class="highlight highlight-source-matlab" style="box-sizing:
+      border-box; margin-bottom: 16px; color: rgb(36, 41, 46);
+      font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe
+      UI&quot;, Helvetica, Arial, sans-serif, &quot;Apple Color
+      Emoji&quot;, &quot;Segoe UI Emoji&quot;, &quot;Segoe UI
+      Symbol&quot;; font-size: 16px; font-style: normal;
+      font-variant-ligatures: normal; font-variant-caps: normal;
+      font-weight: 400; letter-spacing: normal; orphans: 2; text-align:
+      start; text-indent: 0px; text-transform: none; white-space:
+      normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width:
+      0px; text-decoration-style: initial; text-decoration-color:
+      initial;">
+      <pre style="box-sizing: border-box; font-family: SFMono-Regular, Consolas, &quot;Liberation Mono&quot;, Menlo, Courier, monospace; font-size: 13.6px; margin-top: 0px; margin-bottom: 0px; word-wrap: normal; padding: 16px; overflow: auto; line-height: 1.45; background-color: rgb(246, 248, 250); border-radius: 3px; word-break: normal;">  plot(ma)</pre>
+    </div>
+    <h2 style="box-sizing: border-box; margin-top: 24px; margin-bottom:
+      16px; font-size: 1.5em; font-weight: 600; line-height: 1.25;
+      padding-bottom: 0.3em; border-bottom: 1px solid rgb(234, 236,
+      239); color: rgb(36, 41, 46); font-family: -apple-system,
+      BlinkMacSystemFont, &quot;Segoe UI&quot;, Helvetica, Arial,
+      sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI
+      Emoji&quot;, &quot;Segoe UI Symbol&quot;; font-style: normal;
+      font-variant-ligatures: normal; font-variant-caps: normal;
+      letter-spacing: normal; orphans: 2; text-align: start;
+      text-indent: 0px; text-transform: none; white-space: normal;
+      widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px;
+      text-decoration-style: initial; text-decoration-color: initial;"><a
+        id="user-content-using-commands-scripting" class="anchor"
+        aria-hidden="true"
+href="https://github.com/farhi/matlab-mastrostack#using-commands-scripting"
+        style="box-sizing: border-box; background-color: transparent;
+        color: rgb(3, 102, 214); text-decoration: none; float: left;
+        padding-right: 4px; margin-left: -20px; line-height: 1;"><svg
+          class="octicon octicon-link" viewBox="0 0 16 16" version="1.1"
+          width="16" height="16" aria-hidden="true"><path
+            fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3
+            4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2
+            3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98
+            0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12
+            13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64
+            1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9
+            13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Using
+      commands (scripting)</h2>
+    <p style="box-sizing: border-box; margin-top: 0px; margin-bottom:
+      16px; color: rgb(36, 41, 46); font-family: -apple-system,
+      BlinkMacSystemFont, &quot;Segoe UI&quot;, Helvetica, Arial,
+      sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI
+      Emoji&quot;, &quot;Segoe UI Symbol&quot;; font-size: 16px;
+      font-style: normal; font-variant-ligatures: normal;
+      font-variant-caps: normal; font-weight: 400; letter-spacing:
+      normal; orphans: 2; text-align: start; text-indent: 0px;
+      text-transform: none; white-space: normal; widows: 2;
+      word-spacing: 0px; -webkit-text-stroke-width: 0px;
+      text-decoration-style: initial; text-decoration-color: initial;">Using
+      commands allow to script/automate the procedure.</p>
+    <div class="highlight highlight-source-matlab" style="box-sizing:
+      border-box; margin-bottom: 16px; color: rgb(36, 41, 46);
+      font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe
+      UI&quot;, Helvetica, Arial, sans-serif, &quot;Apple Color
+      Emoji&quot;, &quot;Segoe UI Emoji&quot;, &quot;Segoe UI
+      Symbol&quot;; font-size: 16px; font-style: normal;
+      font-variant-ligatures: normal; font-variant-caps: normal;
+      font-weight: 400; letter-spacing: normal; orphans: 2; text-align:
+      start; text-indent: 0px; text-transform: none; white-space:
+      normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width:
+      0px; text-decoration-style: initial; text-decoration-color:
+      initial;">
+      <pre style="box-sizing: border-box; font-family: SFMono-Regular, Consolas, &quot;Liberation Mono&quot;, Menlo, Courier, monospace; font-size: 13.6px; margin-top: 0px; margin-bottom: 0px; word-wrap: normal; padding: 16px; overflow: auto; line-height: 1.45; background-color: rgb(246, 248, 250); border-radius: 3px; word-break: normal;">   <span class="pl-c" style="box-sizing: border-box; color: rgb(106, 115, 125);"><span class="pl-c" style="box-sizing: border-box; color: rgb(106, 115, 125);">%</span> create Ma(e)stroStack and import images</span>
+   ma=mastrostack(<span class="pl-s" style="box-sizing: border-box; color: rgb(3, 47, 98);"><span class="pl-pds" style="box-sizing: border-box; color: rgb(3, 47, 98);">'</span>path/to/images/*.JPG<span class="pl-pds" style="box-sizing: border-box; color: rgb(3, 47, 98);">'</span></span>,<span class="pl-s" style="box-sizing: border-box; color: rgb(3, 47, 98);"><span class="pl-pds" style="box-sizing: border-box; color: rgb(3, 47, 98);">'</span>path/to/darks/*.JPG<span class="pl-pds" style="box-sizing: border-box; color: rgb(3, 47, 98);">'</span></span>,<span class="pl-s" style="box-sizing: border-box; color: rgb(3, 47, 98);"><span class="pl-pds" style="box-sizing: border-box; color: rgb(3, 47, 98);">'</span>path/to/flats/*.JPG<span class="pl-pds" style="box-sizing: border-box; color: rgb(3, 47, 98);">'</span></span>);
+
+   <span class="pl-c" style="box-sizing: border-box; color: rgb(106, 115, 125);"><span class="pl-c" style="box-sizing: border-box; color: rgb(106, 115, 125);">%</span> stack. The first 'light' image will be used as Reference for stacking</span>
+   stack(ma);</pre>
+    </div>
+    <h2 style="box-sizing: border-box; margin-top: 24px; margin-bottom:
+      16px; font-size: 1.5em; font-weight: 600; line-height: 1.25;
+      padding-bottom: 0.3em; border-bottom: 1px solid rgb(234, 236,
+      239); color: rgb(36, 41, 46); font-family: -apple-system,
+      BlinkMacSystemFont, &quot;Segoe UI&quot;, Helvetica, Arial,
+      sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI
+      Emoji&quot;, &quot;Segoe UI Symbol&quot;; font-style: normal;
+      font-variant-ligatures: normal; font-variant-caps: normal;
+      letter-spacing: normal; orphans: 2; text-align: start;
+      text-indent: 0px; text-transform: none; white-space: normal;
+      widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px;
+      text-decoration-style: initial; text-decoration-color: initial;"><a
+        id="user-content-methods" class="anchor" aria-hidden="true"
+        href="https://github.com/farhi/matlab-mastrostack#methods"
+        style="box-sizing: border-box; background-color: transparent;
+        color: rgb(3, 102, 214); text-decoration: none; float: left;
+        padding-right: 4px; margin-left: -20px; line-height: 1;"><svg
+          class="octicon octicon-link" viewBox="0 0 16 16" version="1.1"
+          width="16" height="16" aria-hidden="true"><path
+            fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3
+            4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2
+            3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98
+            0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12
+            13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64
+            1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9
+            13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Methods</h2>
     <ul style="box-sizing: border-box; padding-left: 2em; margin-top:
       0px; margin-bottom: 16px; color: rgb(36, 41, 46); font-family:
       -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;,
@@ -223,115 +628,55 @@
       text-indent: 0px; text-transform: none; white-space: normal;
       widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px;
       text-decoration-style: initial; text-decoration-color: initial;">
-      <li style="box-sizing: border-box;">images: a filename name or
-        cell of file names, that may include wildcards, or matrix (rgb,
-        gray). When not given or empty, a file selector pops-up.</li>
-      <li style="box-sizing: border-box; margin-top: 0.25em;">dark: a
-        single dark frame which is subtracted to all images. When not
-        given or empty, a file selector pops-up. Use 'cancel' button to
-        proceed without dark subtraction.</li>
-      <li style="box-sizing: border-box; margin-top: 0.25em;">flat: a
-        single flat frame which is divided to all images. When not given
-        or empty, a file selector pops-up. Use 'cancel' button to
-        proceed without flat normalisation.</li>
+      <li style="box-sizing: border-box;"><strong style="box-sizing:
+          border-box; font-weight: 600;">about</strong><span>&nbsp;</span>display
+        a dialg box</li>
+      <li style="box-sizing: border-box; margin-top: 0.25em;"><strong
+          style="box-sizing: border-box; font-weight: 600;">correct</strong><span>&nbsp;</span>correct
+        and image for dark (background) and flat (vigneting)</li>
+      <li style="box-sizing: border-box; margin-top: 0.25em;"><strong
+          style="box-sizing: border-box; font-weight: 600;">cpselect</strong><span>&nbsp;</span>ALIGN
+        images on reference</li>
+      <li style="box-sizing: border-box; margin-top: 0.25em;"><strong
+          style="box-sizing: border-box; font-weight: 600;">diff</strong><span>&nbsp;</span>compute
+        difference of an image with reference</li>
+      <li style="box-sizing: border-box; margin-top: 0.25em;"><strong
+          style="box-sizing: border-box; font-weight: 600;">delete</strong><span>&nbsp;</span>delete
+        the mastrostack, and clear memory</li>
+      <li style="box-sizing: border-box; margin-top: 0.25em;"><strong
+          style="box-sizing: border-box; font-weight: 600;">exist</strong><span>&nbsp;</span>check
+        if an image has already been loaded</li>
+      <li style="box-sizing: border-box; margin-top: 0.25em;"><strong
+          style="box-sizing: border-box; font-weight: 600;">getdark</strong><span>&nbsp;</span>compute
+        the master Dark</li>
+      <li style="box-sizing: border-box; margin-top: 0.25em;"><strong
+          style="box-sizing: border-box; font-weight: 600;">getflat</strong><span>&nbsp;</span>compute
+        the master Flat</li>
+      <li style="box-sizing: border-box; margin-top: 0.25em;"><strong
+          style="box-sizing: border-box; font-weight: 600;">imread</strong><span>&nbsp;</span>load
+        an image and return its matrix and information</li>
+      <li style="box-sizing: border-box; margin-top: 0.25em;"><strong
+          style="box-sizing: border-box; font-weight: 600;">label</strong><span>&nbsp;</span>label
+        an image as light, dark, flat or skip</li>
+      <li style="box-sizing: border-box; margin-top: 0.25em;"><strong
+          style="box-sizing: border-box; font-weight: 600;">listdlg</strong><span>&nbsp;</span>display
+        a selector for images</li>
+      <li style="box-sizing: border-box; margin-top: 0.25em;"><strong
+          style="box-sizing: border-box; font-weight: 600;">load</strong><span>&nbsp;</span>load
+        an image and return its information</li>
+      <li style="box-sizing: border-box; margin-top: 0.25em;"><strong
+          style="box-sizing: border-box; font-weight: 600;">mastrostack</strong><span>&nbsp;</span>create
+        the Ma(e)strostack session</li>
+      <li style="box-sizing: border-box; margin-top: 0.25em;"><strong
+          style="box-sizing: border-box; font-weight: 600;">plot</strong><span>&nbsp;</span>plot
+        the user interface and images</li>
+      <li style="box-sizing: border-box; margin-top: 0.25em;"><strong
+          style="box-sizing: border-box; font-weight: 600;">stack</strong><span>&nbsp;</span>STACK
+        light images, correcting with dark and flat.</li>
+      <li style="box-sizing: border-box; margin-top: 0.25em;"><strong
+          style="box-sizing: border-box; font-weight: 600;">save</strong><span>&nbsp;</span>save
+        the session</li>
     </ul>
-    <br>
-    <br>
-    Output<br>
-    An object, which writes stacked images, and has the following
-    methods.<br>
-    <br>
-    Properties<br>
-    <br>
-    <br>
-    Methods<br>
-    <br>
-    about&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-    display a dialg box<br>
-    &nbsp; correct&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-    correct and image for dark (background) and flat (vigneting)<br>
-    &nbsp; cpselect&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ALIGN
-    images on reference<br>
-    &nbsp;
-    diff&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-    compute difference of an image with reference<br>
-    &nbsp; delete&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-    delete the mastrostack, and clear memory<br>
-    &nbsp;
-    exist&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-    check if an image has already been
-    loaded&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-    <br>
-    &nbsp; getdark&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-    compute the master Dark<br>
-    &nbsp; getflat&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-    compute the master Flat<br>
-    &nbsp; imread&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-    load an image and return its matrix and information<br>
-    &nbsp;
-    label&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-    label an image as light, dark, flat or skip<br>
-    &nbsp; listdlg&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-    display a selector for images<br>
-    &nbsp;
-    load&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-    load an image and return its information<br>
-    &nbsp; mastrostack&nbsp;&nbsp;&nbsp;&nbsp; create the Ma(e)strostack
-    session<br>
-    &nbsp;
-    plot&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-    plot the user interface and images<br>
-    &nbsp;
-    stack&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-    STACK light images, correcting with dark and flat.<br>
-    <br>
-    Typical Usage<br>
-    <br>
-    After imporing the files, you should label them using the Image/Mark
-    as... <br>
-    &nbsp;&nbsp; menu items. Then define one of the images as the
-    reference (R). You can navigate<br>
-    &nbsp;&nbsp; within images with the Image/Goto menu item. 'Bad'
-    images can be skipped (ignored).<br>
-    &nbsp;&nbsp; To use them back, set their type to 'light'.<br>
-    &nbsp;&nbsp; You should then compute the master Dark and Flat images
-    (Compute menu).<br>
-    &nbsp;&nbsp; <br>
-    &nbsp;&nbsp; Then, use the Compute/Align item to compute the images
-    control points (stars)<br>
-    &nbsp;&nbsp; whch also corrects for background and scope response
-    when dark and flat are defined.<br>
-    &nbsp;<br>
-    &nbsp;&nbsp; We then advise to check the sharpness with the
-    'Compute/Show sharpness' which<br>
-    &nbsp;&nbsp; metric is highest for clearer images, and low for
-    blurred/moved ones. The axis<br>
-    &nbsp;&nbsp; is the image index. To automatically select best
-    images, use the menu item <br>
-    &nbsp;&nbsp; 'Compute/Select on sharpness' and set a threshold. All
-    images above (clean) <br>
-    &nbsp;&nbsp; will be selected, and those below will be marked as
-    'skip'.<br>
-    &nbsp;<br>
-    &nbsp;&nbsp; When ready, use the Compute/Stack menu item. The final
-    image is then shon <br>
-    &nbsp;&nbsp; and written to disk. Use e.g. Lightroom, RawTherapee,
-    DarkTable to enhance<br>
-    &nbsp;&nbsp; contrast.<br>
-    &nbsp;<br>
-    Issues<br>
-    <br>
-    Ignore many images<br>
-    <br>
-    <br>
-    &nbsp;&nbsp; If you have difficulties in stacking (some images do
-    not have enough control<br>
-    &nbsp;&nbsp; points), relax e.g. the translation tolerance, using
-    the menu item <br>
-    &nbsp;&nbsp; 'Compute/Set tolerances'.<br>
-    <br>
-    <meta http-equiv="content-type" content="text/html;
-      charset=windows-1252">
     <h2 style="box-sizing: border-box; margin-top: 24px; margin-bottom:
       16px; font-size: 1.5em; font-weight: 600; line-height: 1.25;
       padding-bottom: 0.3em; border-bottom: 1px solid rgb(234, 236,
@@ -343,47 +688,130 @@
       letter-spacing: normal; orphans: 2; text-align: start;
       text-indent: 0px; text-transform: none; white-space: normal;
       widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px;
-      text-decoration-style: initial; text-decoration-color: initial;">Requirements/Installation</h2>
-    <p style="box-sizing: border-box; margin-top: 0px; margin-bottom:
-      16px; color: rgb(36, 41, 46); font-family: -apple-system,
-      BlinkMacSystemFont, &quot;Segoe UI&quot;, Helvetica, Arial,
-      sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI
-      Emoji&quot;, &quot;Segoe UI Symbol&quot;; font-size: 16px;
-      font-style: normal; font-variant-ligatures: normal;
-      font-variant-caps: normal; font-weight: 400; letter-spacing:
-      normal; orphans: 2; text-align: start; text-indent: 0px;
-      text-transform: none; white-space: normal; widows: 2;
-      word-spacing: 0px; -webkit-text-stroke-width: 0px;
-      text-decoration-style: initial; text-decoration-color: initial;">Matlab,
-      no external toolbox.</p>
-    <meta http-equiv="content-type" content="text/html;
-      charset=windows-1252">
-    <h2 style="box-sizing: border-box; margin-top: 24px; margin-bottom:
-      16px; font-size: 1.5em; font-weight: 600; line-height: 1.25;
-      padding-bottom: 0.3em; border-bottom: 1px solid rgb(234, 236,
-      239); color: rgb(36, 41, 46); font-family: -apple-system,
-      BlinkMacSystemFont, &quot;Segoe UI&quot;, Helvetica, Arial,
-      sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI
-      Emoji&quot;, &quot;Segoe UI Symbol&quot;; font-style: normal;
-      font-variant-ligatures: normal; font-variant-caps: normal;
-      letter-spacing: normal; orphans: 2; text-align: start;
-      text-indent: 0px; text-transform: none; white-space: normal;
-      widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px;
-      text-decoration-style: initial; text-decoration-color: initial;">Credits</h2>
-    <p style="box-sizing: border-box; margin-top: 0px; margin-bottom:
-      16px; color: rgb(36, 41, 46); font-family: -apple-system,
-      BlinkMacSystemFont, &quot;Segoe UI&quot;, Helvetica, Arial,
-      sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI
-      Emoji&quot;, &quot;Segoe UI Symbol&quot;; font-size: 16px;
-      font-style: normal; font-variant-ligatures: normal;
-      font-variant-caps: normal; font-weight: 400; letter-spacing:
-      normal; orphans: 2; text-align: start; text-indent: 0px;
-      text-transform: none; white-space: normal; widows: 2;
-      word-spacing: 0px; -webkit-text-stroke-width: 0px;
       text-decoration-style: initial; text-decoration-color: initial;"><a
-        href="http://nghiaho.com/?page_id=671" rel="nofollow"
+        id="user-content-installation" class="anchor" aria-hidden="true"
+        href="https://github.com/farhi/matlab-mastrostack#installation"
         style="box-sizing: border-box; background-color: transparent;
-        color: rgb(3, 102, 214); text-decoration: none;">http://nghiaho.com/?page_id=671</a></p>
+        color: rgb(3, 102, 214); text-decoration: none; float: left;
+        padding-right: 4px; margin-left: -20px; line-height: 1;"><svg
+          class="octicon octicon-link" viewBox="0 0 16 16" version="1.1"
+          width="16" height="16" aria-hidden="true"><path
+            fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3
+            4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2
+            3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98
+            0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12
+            13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64
+            1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9
+            13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Installation:</h2>
+    <p style="box-sizing: border-box; margin-top: 0px; margin-bottom:
+      16px; color: rgb(36, 41, 46); font-family: -apple-system,
+      BlinkMacSystemFont, &quot;Segoe UI&quot;, Helvetica, Arial,
+      sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI
+      Emoji&quot;, &quot;Segoe UI Symbol&quot;; font-size: 16px;
+      font-style: normal; font-variant-ligatures: normal;
+      font-variant-caps: normal; font-weight: 400; letter-spacing:
+      normal; orphans: 2; text-align: start; text-indent: 0px;
+      text-transform: none; white-space: normal; widows: 2;
+      word-spacing: 0px; -webkit-text-stroke-width: 0px;
+      text-decoration-style: initial; text-decoration-color: initial;">You
+      only need Matlab, no external toolbox.</p>
+    <p style="box-sizing: border-box; margin-top: 0px; margin-bottom:
+      16px; color: rgb(36, 41, 46); font-family: -apple-system,
+      BlinkMacSystemFont, &quot;Segoe UI&quot;, Helvetica, Arial,
+      sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI
+      Emoji&quot;, &quot;Segoe UI Symbol&quot;; font-size: 16px;
+      font-style: normal; font-variant-ligatures: normal;
+      font-variant-caps: normal; font-weight: 400; letter-spacing:
+      normal; orphans: 2; text-align: start; text-indent: 0px;
+      text-transform: none; white-space: normal; widows: 2;
+      word-spacing: 0px; -webkit-text-stroke-width: 0px;
+      text-decoration-style: initial; text-decoration-color: initial;">Copy
+      the directory and navigate to it. Then type from the Matlab
+      prompt:</p>
+    <div class="highlight highlight-source-matlab" style="box-sizing:
+      border-box; margin-bottom: 16px; color: rgb(36, 41, 46);
+      font-family: -apple-system, BlinkMacSystemFont, &quot;Segoe
+      UI&quot;, Helvetica, Arial, sans-serif, &quot;Apple Color
+      Emoji&quot;, &quot;Segoe UI Emoji&quot;, &quot;Segoe UI
+      Symbol&quot;; font-size: 16px; font-style: normal;
+      font-variant-ligatures: normal; font-variant-caps: normal;
+      font-weight: 400; letter-spacing: normal; orphans: 2; text-align:
+      start; text-indent: 0px; text-transform: none; white-space:
+      normal; widows: 2; word-spacing: 0px; -webkit-text-stroke-width:
+      0px; text-decoration-style: initial; text-decoration-color:
+      initial;">
+      <pre style="box-sizing: border-box; font-family: SFMono-Regular, Consolas, &quot;Liberation Mono&quot;, Menlo, Courier, monospace; font-size: 13.6px; margin-top: 0px; margin-bottom: 0px; word-wrap: normal; padding: 16px; overflow: auto; line-height: 1.45; background-color: rgb(246, 248, 250); border-radius: 3px; word-break: normal;">addpath(pwd)</pre>
+    </div>
+    <p style="box-sizing: border-box; margin-top: 0px; margin-bottom:
+      16px; color: rgb(36, 41, 46); font-family: -apple-system,
+      BlinkMacSystemFont, &quot;Segoe UI&quot;, Helvetica, Arial,
+      sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI
+      Emoji&quot;, &quot;Segoe UI Symbol&quot;; font-size: 16px;
+      font-style: normal; font-variant-ligatures: normal;
+      font-variant-caps: normal; font-weight: 400; letter-spacing:
+      normal; orphans: 2; text-align: start; text-indent: 0px;
+      text-transform: none; white-space: normal; widows: 2;
+      word-spacing: 0px; -webkit-text-stroke-width: 0px;
+      text-decoration-style: initial; text-decoration-color: initial;">If
+      you also have<span>&nbsp;</span><strong style="box-sizing:
+        border-box; font-weight: 600;">readraw</strong><span>&nbsp;</span>installed
+      and available, you will be able to import RAW camera images.</p>
+    <h2 style="box-sizing: border-box; margin-top: 24px; margin-bottom:
+      16px; font-size: 1.5em; font-weight: 600; line-height: 1.25;
+      padding-bottom: 0.3em; border-bottom: 1px solid rgb(234, 236,
+      239); color: rgb(36, 41, 46); font-family: -apple-system,
+      BlinkMacSystemFont, &quot;Segoe UI&quot;, Helvetica, Arial,
+      sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI
+      Emoji&quot;, &quot;Segoe UI Symbol&quot;; font-style: normal;
+      font-variant-ligatures: normal; font-variant-caps: normal;
+      letter-spacing: normal; orphans: 2; text-align: start;
+      text-indent: 0px; text-transform: none; white-space: normal;
+      widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px;
+      text-decoration-style: initial; text-decoration-color: initial;"><a
+        id="user-content-credits" class="anchor" aria-hidden="true"
+        href="https://github.com/farhi/matlab-mastrostack#credits"
+        style="box-sizing: border-box; background-color: transparent;
+        color: rgb(3, 102, 214); text-decoration: none; float: left;
+        padding-right: 4px; margin-left: -20px; line-height: 1;"><svg
+          class="octicon octicon-link" viewBox="0 0 16 16" version="1.1"
+          width="16" height="16" aria-hidden="true"><path
+            fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3
+            4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2
+            3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98
+            0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12
+            13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64
+            1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9
+            13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Credits</h2>
+    <ul style="box-sizing: border-box; padding-left: 2em; margin-top:
+      0px; margin-bottom: 16px; color: rgb(36, 41, 46); font-family:
+      -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;,
+      Helvetica, Arial, sans-serif, &quot;Apple Color Emoji&quot;,
+      &quot;Segoe UI Emoji&quot;, &quot;Segoe UI Symbol&quot;;
+      font-size: 16px; font-style: normal; font-variant-ligatures:
+      normal; font-variant-caps: normal; font-weight: 400;
+      letter-spacing: normal; orphans: 2; text-align: start;
+      text-indent: 0px; text-transform: none; white-space: normal;
+      widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px;
+      text-decoration-style: initial; text-decoration-color: initial;">
+      <li style="box-sizing: border-box;"><strong style="box-sizing:
+          border-box; font-weight: 600;">ReadRaw</strong><span>&nbsp;</span>a
+        Matlab RAW camera reader<span>&nbsp;</span><a
+          href="https://github.com/farhi/matlab-readraw"
+          style="box-sizing: border-box; background-color: transparent;
+          color: rgb(3, 102, 214); text-decoration: none;">https://github.com/farhi/matlab-readraw</a></li>
+      <li style="box-sizing: border-box; margin-top: 0.25em;"><strong
+          style="box-sizing: border-box; font-weight: 600;">astrotnstack</strong><span>&nbsp;</span>automatically
+        align and stack astro-photography pictures<span>&nbsp;</span><a
+          href="https://github.com/farhi/astrotnstack"
+          style="box-sizing: border-box; background-color: transparent;
+          color: rgb(3, 102, 214); text-decoration: none;">https://github.com/farhi/astrotnstack</a>.
+        This is the initial prototype of Ma(e)stroStack.</li>
+      <li style="box-sizing: border-box; margin-top: 0.25em;">optimal
+        rotation/translation between points<span>&nbsp;</span><a
+          href="http://nghiaho.com/?page_id=671" rel="nofollow"
+          style="box-sizing: border-box; background-color: transparent;
+          color: rgb(3, 102, 214); text-decoration: none;">http://nghiaho.com/?page_id=671</a></li>
+    </ul>
     <p style="box-sizing: border-box; margin-top: 0px; margin-bottom:
       16px; color: rgb(36, 41, 46); font-family: -apple-system,
       BlinkMacSystemFont, &quot;Segoe UI&quot;, Helvetica, Arial,
@@ -442,8 +870,7 @@
       letter-spacing: normal; orphans: 2; text-align: start;
       text-indent: 0px; text-transform: none; white-space: normal;
       widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px;
-      text-decoration-style: initial; text-decoration-color: initial;">E.
-      Farhi April 2018. Version 1.0. GPL2.</p>
-    <br>
+      text-decoration-style: initial; text-decoration-color: initial;">(c)
+      E. Farhi, 2018. GPL2.</p>
   </body>
 </html>
