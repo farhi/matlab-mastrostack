@@ -1,6 +1,8 @@
 # matlab-mastrostack
 Ma(e)stroStack: a Matlab class to automatically align and stack astro-photography images
  
+ ![Image of MastroStack](https://github.com/farhi/matlab-mastrostack/blob/master/doc/mastrostack.png)
+ 
  Purpose
  -------
  
