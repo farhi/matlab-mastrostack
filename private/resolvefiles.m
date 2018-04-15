@@ -17,7 +17,17 @@ function a = resolvefiles(a, t)
     f{end+1} = '*.png;*.PNG';
     f{end+1} = 'PNG images (*.jpg)';
     f{end+1} = '*.tif;*.TIF;*.tiff;*.TIFF';
-    f{end+1} = 'JPEG images (*.jpg)';
+    f{end+1} = 'TIFF images (*.tiff)';
+    f{end+1} = '*.fit;*.FIT;*.fits;*.FITS;*.fts;*.FTS';
+    f{end+1} = 'FITS images (*.fits)';
+    if exist('readraw')
+      f{end+1} = [...
+       '*.raw;*.crw;*.cr2;*.kdc;*.dcr;*.mrw;*.arw;' ...
+       '*.nef;*.nrw;*.dng;*.orf;*.ptx;*.pef;*.rw2;*.srw;*.raf;*.kdc' ...
+       '*.RAW;*.CRW;*.CR2;*.KDC;*.DCR;*.MRW;*.ARW;' ...
+       '*.NEF;*.NRW;*.DNG;*.ORF;*.PTX;*.PEF;*.RW2;*.SRW;*.RAF;*.KDC'];
+      f{end+1} = 'RAW Camera Format (RAW)';
+    end
     for index=1:numel(formats)
       this = formats(index);
       F=upper(this.ext);

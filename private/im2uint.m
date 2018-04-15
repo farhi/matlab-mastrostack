@@ -3,12 +3,16 @@ function im = im2uint(im, cl)
   
   if nargin < 2, cl='uint8'; end
   if isempty(im), return; end
+  if strcmp(class(im), cl), return; end
   
   switch cl
   case 'uint8'
     cl = 8;
   case 'uint16'
     cl = 16;
+  case 'single'
+    im = single(imdouble(im));
+    return
   case 'double'
     im = imdouble(im);
     return

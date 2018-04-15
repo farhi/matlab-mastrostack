@@ -1,9 +1,32 @@
 classdef mastrostack < handle
   % mastrostack: a class to automatically align and stack astro-photography images
   %
-  %  After importing images (see below), the stacked image is computed, using the
-  %  dark and flat images for correction. All images are aligned on a reference, 
-  %  and added with sub-pixel resolution.
+  %  Purpose
+  %
+  %  This class gets a list of images, and automatically determines bright stars as
+  %  control points. These are followed along pictures, and used to build an affine
+  %  transformation at constant scale (e.g. a rotation and translation). All images
+  %  are then stacked. The images can be given as file names (may include wildcards),
+  %  or matrices from e.g. imread, and support both RGB and gray images. As stars are
+  %  used for the alignment, this method is suited for deep sky images, but not for
+  %  planetary imaging.
+  %
+  %  This function does not make use of the phase correlation technique, but operates
+  %  directly on the images. It assumes that at least two bright stars remain on each
+  %  picture, but tolerate translations and rotations, as well as stars/control
+  %  points that appear/disappear on the field of view. The procedure also ignores
+  %  very sharp peaks, assuming they originate from dead pixels (and would then be
+  %  static over images, leading to traces).
+  %
+  %  It is highly recommended to specify a dark frame filename, which will be
+  %  subtracted to all images, in order to e.g. remove most hot/dead pixels. To get
+  %  such a 'dark', use your camera alone and shot once with the cap on, same
+  %  settings as the other pictures (duration, ISO). Image should be full black.
+  %
+  %  You may as well specify a flat frame filename, which will be divided to all
+  %  images, in order to counter vignetting (darker borders). To get such a 'flat',
+  %  shot once with the scope pointing at a uniform view (sky, white wall). Adapt the
+  %  duration so that you get a rather gray image (not full black or white).
   %
   % Syntax
   % -----------
@@ -14,53 +37,76 @@ classdef mastrostack < handle
   %   ma = mastrostack(light, dark)
   %   ma = mastrostack(light, dark, flat)
   %     loads light, dark (background) and flat (scope response) images, and label them.
+  %    
+  %  Importing images
+  %  ----------------
+  %  Start with:
   %
-  % The usual procedure with the User Interface
-  % -------------------------------------------
-  %  After imporing the files, you should label them using the Image/Mark as... 
-  %  menu items. Then define one of the images as the reference (R). You can navigate
-  %  within images with the Image/Goto menu item. 'Bad' images can be skipped (ignored).
-  %  To use them back, set their type to 'light'.
-  %  You should then compute the master Dark and Flat images (Compute menu).
-  %  
-  %  Then, use the Compute/Align item to compute the images control points (stars)
-  %  whch also corrects for background and scope response when dark and flat are defined.
+  %    ma=mastrostack;
+  %    
+  %  Then press the Return key on the main interface. A Drop Files Here button
+  %  appears in the lower left side. Drag and drop your Dark, Flat and Light images
+  %  there. Images having 'dark' or 'flat' in their path/file name are marked as such
+  %  automatically. You may alternatively use the File menu items.
   %
-  %  We then advise to check the sharpness with the 'Compute/Show sharpness' which
-  %  metric is highest for clearer images, and low for blurred/moved ones. The axis
-  %  is the image index. To automatically select best images, use the menu item 
-  %  'Compute/Select on sharpness' and set a threshold. All images above (clean) 
-  %  will be selected, and those below will be marked as 'skip'.
+  %  Supported image formats include JPG, PNG, TIFF, FITS. If you have installed
+  %  readraw, you may as well directly import RAW camera images. This is highly
+  %  recommended, as it retains much more information from the camera shot than the
+  %  generated JPEG images, which prooves to be essential for subtracting the Dark
+  %  image (background), and revealing faint objects.
   %
-  %  When ready, use the Compute/Stack menu item. The final image is then shon 
-  %  and written to disk. Use e.g. Lightroom, RawTherapee, DarkTable to enhance
+  %  Preparing the Stacking
+  %  ----------------------
+  %  After importing the files, you should label them using the 'Image/Mark as...'
+  %  menu items. You can navigate within images with the Image/Goto menu item, and
+  %  the arrow keys, or the mouse wheel. 'Bad' images can be skipped (ignored). To
+  %  use them back, set their type to 'light'. You should then compute the master
+  %  Dark and Flat images (Compute menu).
+  %
+  %  It is recommended to zoom onto specific features (e.g. a set of stars) to check
+  %  visually for their sharpness. Deselect the Zoom tool, and scan through images
+  %  using the left arrow key, and press the 'I' key to mark images to be ignored,
+  %  such as those blurred. To reset the plot, press the Return key.
+  %
+  %  You can select the Reference image, which will be used as template for stacking.
+  %  If not defined, the first image in the list will be used as such when stacking.
+  %
+  %  Optionally, use the Compute/Align item to compute the images control points
+  %  (stars) which also corrects for background and scope response when dark and flat
+  %  are defined. This procedure computes a metric to quantify the sharpness. You may
+  %  then select the 'Compute/Show sharpness' menu item which metric is highest for
+  %  clearer images, and low for blurred/moved ones. The axis is the image index. To
+  %  automatically select best images, use the menu item 'Compute/Select on
+  %  sharpness' and set a threshold. All images above will be selected, and those
+  %  below will be marked as 'skip'. This automatic procedure is not optimal, and a
+  %  manual check, as above, should be preferred.
+  %
+  %  Stacking
+  %  --------
+  %  When ready, use the Compute/Stack menu item. If the Alignment has not been
+  %  executed previously, it is achieved for each image. The final image is then
+  %  shown and written to disk. Use e.g. Lightroom, RawTherapee, DarkTable to enhance
   %  contrast.
   %
+  %  Notes
+  %  -----
   %  If you have difficulties in stacking (some images do not have enough control
-  %  points), relax e.g. the translation tolerance, using the menu item 
-  %  'Compute/Set tolerances'. You can also increase the number of control points.
+  %  points), relax e.g. the translation tolerance, using the menu item 'Compute/Set
+  %  tolerances'. You can also increase the number of control points. In case the
+  %  main interface is closed, get it back with
   %
-  % The usual procedure with commands
-  % ---------------------------------
+  %    plot(ma)
+  %    
+  %  Using commands (scripting)
+  %  --------------------------
+  %  Using commands allow to script/automate the procedure.
   %
-  % Using commands allow to script/automate the procedure.
+  %     % create Ma(e)stroStack and import images
+  %     ma=mastrostack('path/to/images/*.JPG','path/to/darks/*.JPG','path/to/flats/*.JPG');
   %
-  %   % create Ma(e)stroStack and import images
-  %   ma=mastrostack;
-  %   [~,img]=imread(ma, 'path/to/darks/*.JPG');
-  %   label(ma, 'dark', img);
-  %   [~,img]=imread(ma, 'path/to/flats/*.JPG');
-  %   label(ma, 'flat', img);
-  %   [~,img]=imread(ma, 'path/to/images/*.JPG');
-  %   label(ma, 'light', img);
+  %     % stack. The first 'light' image will be used as Reference for stacking
+  %     stack(ma);
   %
-  %   % compute dark, flat and control points
-  %   getdark(ma);
-  %   getflat(ma);
-  %   cpselect(ma);
-  %
-  %   % stack !! The first 'light' image will be used as Reference for stacking
-  %   stack(ma);
   %
   % Methods
   % -------
@@ -104,8 +150,8 @@ classdef mastrostack < handle
     
     % the actual image matrices are not stored (except when given as such)
     % as we expect to handle 100's of images.
-    dark    = 0;  % stored as a double in [0-1]
-    flat    = 0;  % stored as a double in [0-1]
+    dark    = 0;  % stored as a double in [0-1] uint16
+    flat    = 0;  % stored as a double in [0-1] float
     light   = 0;  % stored as a double in [0-1]
     lightN  = 0;  % stored as a uint16
     nbControlPoints = 30;
@@ -305,12 +351,15 @@ classdef mastrostack < handle
           nbDarks   = nbDarks + 1;
         end
         if nbDarks>0
-          self.dark = sumDarks/nbDarks;
+          self.dark = im2uint(sumDarks/nbDarks, 'uint16');
+          clear sumDarks
           disp([ mfilename ':   used ' num2str(nbDarks) ' images.' ])
         else self.dark=0;
         end
       end
-      im = self.dark;
+      if nargout
+        im = self.dark;
+      end
       
     end % getdark
     
@@ -328,22 +377,32 @@ classdef mastrostack < handle
         for index=1:numel(self.images)
           img = self.images(index);
           if ~strcmp(img.type, 'flat'), continue; end
-          % read image (re-read if needed), convert to double [0-1]
-          im = imdouble(rgb2gray(imread(self, index)));
+          % read image (re-read if needed), convert to uint16
+          im = im2uint(rgb2gray(imread(self, index)), 'uint16');
+          % remove the dark (uint16) if any is available
+          if ~isempty(self.dark) && ~isscalar(self.dark)
+            im = im - rgb2gray(self.dark);
+          end
+          im = imdouble(im);
           im = im/max(im(:));
           sumFlats  = sumFlats+ im;
+          clear im
           nbFlats   = nbFlats + 1;
         end
         if nbFlats>0
-          self.flat = sumFlats/nbFlats;
+          self.flat = single(sumFlats/nbFlats);
+          clear sumFlats
           index     = isfinite(self.flat) & self.flat > 0;
           self.flat = self.flat/max(max(self.flat(index)));
           index     = ~isfinite(self.flat) | self.flat <= 0;
           self.flat(index) = 1;
+          clear index
           disp([ mfilename ':   used ' num2str(nbFlats) ' images.' ])
         else self.flat=0; end
       end
-      im = self.flat;
+      if nargout
+        im = self.flat;
+      end
       
     end % getflat
 
@@ -359,17 +418,17 @@ classdef mastrostack < handle
       end
       
       if isempty(im), return; end
-      im = imdouble(im);
+      im = im2uint(im, 'uint16');
       
-       % correct for read-out/sensor noise (subtract)
-      if ~isempty(self.dark) && ~isscalar(self.dark)
-        im = im - self.dark; % dark is a double
+      % correct for read-out/sensor noise (subtract)
+      if ~isempty(self.dark) && ~isscalar(self.dark) && ndims(self.dark) == 3
+        im = im - self.dark; % dark is a uint16
       end
       
       % correct for flat field to compensate vigneting (divide)
       if ~isempty(self.flat) && ~isscalar(self.flat)
         for l=1:size(im,3)
-          im(:,:,l) = im(:,:,l)./self.flat;
+          im(:,:,l) = im2uint(imdouble(im(:,:,l))./double(self.flat),'uint16');
         end
       end
 
@@ -469,10 +528,11 @@ classdef mastrostack < handle
         ((~isempty(self.flat) && ~isscalar(self.flat)) || ...
          (~isempty(self.dark) && ~isscalar(self.dark)))
         im = correct(self, im);
-        t = [ t ' (/flat, -dark)' ];
+        t = [ t ' (-dark, /flat)' ];
       end
       t = [ t ' [' num2str(self.currentImage) '/' num2str(numel(self.images)) ']' ];
       
+      im = im2uint(im,'uint8');
       if strcmp(option, 'log')
         im = imlogscale(im);
       end
@@ -503,6 +563,8 @@ classdef mastrostack < handle
       %   If some images are ignored, you may increase e.g. toleranceTranslation.
       % im = stack(self, filename)
       %   same as above, and specifies an output filename.
+      %
+      % The stacking does sum of (light - dark)/(flat - dark)
       
       % compute dark and flat (if not done yet)
       getdark(self);
@@ -511,6 +573,8 @@ classdef mastrostack < handle
       self.lightN= uint8(0);
       ExposureTime = 0;
       if nargin < 2, filename = ''; end
+      
+      nbtostack = 0;
       
       % we first check for the reference and its control points
       for index=1:numel(self.images)
@@ -529,27 +593,29 @@ classdef mastrostack < handle
               disp([ mfilename ':   computing control points for ' this_img.id ' (' num2str(index) ')' ])
               this_img = cpselect(self, this_img, im);
             end
-            self.lightN = self.lightN+1;
             self.light  = imdouble(im);
+            clear im
+            self.lightN = self.lightN+1;
             if isfield(this_img.exif, 'ExposureTime')
               ExposureTime = ExposureTime + this_img.exif.ExposureTime;
             end
-            break
           end
+          nbtostack = nbtostack+1;
         end
       end
       if self.reference < 1 || self.reference > numel(self.images), return; end
       
       delete(findall(0, 'Tag', [ mfilename '_waitbar' ]));
-      wb  = waitbar(0, [ mfilename ': Stacking images (close to abort)...' ]); 
+      wb  = waitbar(0, [ mfilename ': Stacking ' num2str(nbtostack) ' images (close to abort)...' ]); 
       set(wb, 'Tag', [ mfilename '_waitbar' ]);
       t0 = clock; stackedimages = 0;
-      disp([ mfilename ':   Stacking...' ])
+      disp([ mfilename ':   Stacking ' num2str(nbtostack) ' images...' ])
       
       for index=1:numel(self.images)
         this_img = self.images(index);
         
         if isempty(this_img.type) || strcmp('light', this_img.type)
+          stackedimages= stackedimages+1;
           % check for the reference
           if ~self.reference || self.reference == index
             continue; 
@@ -574,10 +640,10 @@ classdef mastrostack < handle
           if isempty (ret_t), continue; end
           
           % we read the image and transform it
-          [im,M]     = imaffine(imdouble(im), ret_R, ret_t);
+          [im,M]     = imaffine(im, ret_R, ret_t);
           self.lightN= self.lightN+M;
           clear M
-          self.light = self.light + im; % add rotated/translated image on the reference
+          self.light = self.light + imdouble(im); % add rotated/translated image on the reference
           clear im
           
           % sum-up exposure
@@ -586,22 +652,22 @@ classdef mastrostack < handle
           end
           
           % compute ETA
-          stackedimages= stackedimages+1;
           dt_from0     = etime(clock, t0);
           dt_per_image = dt_from0/stackedimages;
           % remaining images: numel(s)-index
-          eta    = dt_per_image*(numel(self.images)-index+1);
+          eta    = dt_per_image*(nbtostack-stackedimages);
           ending = addtodate(now, ceil(eta), 'second');
           ending = [ 'Ending ' datestr(ending) ];
           eta    = sprintf('ETA %i [s]. %s', round(eta), ending);
           disp([ mfilename ': ' ...
-              num2str(index) '/' num2str(numel(self.images)) ': ' this_img.id '. ' eta]);
+              num2str(stackedimages) '/' num2str(nbtostack) ': ' ...
+              this_img.id ' [' num2str(this_img.index) ']. ' eta]);
           
           % update waitbar and ETA display
           if ishandle(wb)
-            waitbar(index/numel(self.images), wb, [ 'Stack: ' this_img.id ' (close to abort)...' ]);
-            try;
-            set(wb, 'Name', [ num2str(index) '/' num2str(numel(self.images)) ' ' eta ]);
+            waitbar(stackedimages/nbtostack, wb, [ 'Stack: ' this_img.id ' (close to abort)...' ]);
+            try
+            set(wb, 'Name', [ num2str(stackedimages) '/' num2str(nbtostack) ' ' eta ]);
             end
           else
             disp('Stack: Aborting (user closed the waitbar).')
@@ -616,7 +682,7 @@ classdef mastrostack < handle
         self.light(:,:,index) = self.light(:,:,index) ./ double(self.lightN);
       end
       self.light= im2uint(self.light, 'uint16');
-      im        = self.light;
+      
       % display final image
       image(self.light); 
       title([ mfilename ': Stacked image. Exposure=' num2str(ExposureTime) ' [s]' ]);
@@ -631,7 +697,9 @@ classdef mastrostack < handle
       end
       write_stacked(self.light, filename, this_img.exif);
       disp([ mfilename ': Stacking DONE. Elapsed time ' num2str(etime(clock, t0)) ' [s]' ])
-      
+      if nargout
+        im        = self.light;
+      end
     end % stack
     
     function [ret_t, ret_R] = diff(self, img1)
@@ -717,7 +785,11 @@ classdef mastrostack < handle
         'Name', [ mfilename ': ' name ]);
     end % listdlg
     
-    function this_img = cpselect(self, img, im)
+    function [this_img, im] = align(self, img, im)
+      [this_img, im] = cpselect(self, img, im);
+    end
+    
+    function [this_img, im] = cpselect(self, img, im)
       % cpselect: automatically set control points
       %
       % cpselect(self)
@@ -728,8 +800,9 @@ classdef mastrostack < handle
       
       if nargin < 2, img=1:numel(self.images); end
       
-      delete(findall(0, 'Tag', [ mfilename '_waitbar' ]));
+      
       if numel(img) > 1
+        delete(findall(0, 'Tag', [ mfilename '_waitbar' ]));
         wb  = waitbar(0, [ mfilename ': Aligning images (close to abort)...' ]); 
         set(wb, 'Tag', [ mfilename '_waitbar' ]);
         disp([ mfilename ':   Aligning...' ])
@@ -775,9 +848,10 @@ classdef mastrostack < handle
             sqrt(sum(this_img.points.sharpness.^2)) ...
             /numel(this_img.points.sharpness);
         self.images(this_img.index) = this_img;
+      end % for
+      if numel(img) > 1 && ~isempty(wb)
+        delete(findall(0, 'Tag', [ mfilename '_waitbar' ]));
       end
-      
-      delete(findall(0, 'Tag', [ mfilename '_waitbar' ]));
       
     end % cpselect
   
@@ -950,7 +1024,7 @@ function MenuCallback(src, evnt, self)
       title([ self.images(self.currentImage).id ...
           ' ' self.images(self.currentImage).type ]);
     end
-  case {'C','Clear all control points'}  % clear points
+  case {'C','Clear all control points','Clear control points (this image)'}  % clear points
     if ~isempty(self.currentImage) && ...
       numel(self.images) >= self.currentImage && self.currentImage > 0
       self.images(self.currentImage).points.x = [];
@@ -1011,7 +1085,7 @@ function MenuCallback(src, evnt, self)
     im = self.getflat;
     image(im2uint(im));
     title([ 'Master Flat ' mat2str([ min(im(:)) max(im(:)) ]) ]);
-  case 'Stack'
+  case {'Stack', 'Stack (and Align if needed)' }
     stack(self);
   case 'Align'
     cpselect(self);
@@ -1038,6 +1112,16 @@ function MenuCallback(src, evnt, self)
       end    
     end
     self.currentImage = [];
+  case 'Clear skipped image(s)'
+    disp([ mfilename ': Removing skipped images:' ]);
+    for index=numel(self.images):-1:1
+      if strcmp(self.images(index).index, 'skip')
+        if ischar(self.images(index).source)
+          disp(self.images(index).source)
+        end
+        self.images(index) = [];
+      end
+    end
   case 'Close'
     delete(self.dndcontrol);
     self.dndcontrol = [];
@@ -1129,13 +1213,16 @@ function fig = build_interface(self)
       'Callback', {@MenuCallback, self });
     uimenu(m, 'Label', 'Show in log scale',        ...
       'Callback', {@MenuCallback, self });
-    uimenu(m, 'Label', 'Next image', 'Separator','on',       ...
+    uimenu(m, 'Label', 'Goto image...', 'Separator','on',    ...
+      'Callback', {@MenuCallback, self });
+    uimenu(m, 'Label', 'Next image',       ...
       'Callback', {@MenuCallback, self },'Accelerator','n');
     uimenu(m, 'Label', 'Previous image',        ...
       'Callback', {@MenuCallback, self },'Accelerator','p');
-    uimenu(m, 'Label', 'Goto image...',    ...
+    
+    uimenu(m, 'Label', 'Clear image(s)...', 'Separator','on',    ...
       'Callback', {@MenuCallback, self });
-      uimenu(m, 'Label', 'Clear image(s)...', 'Separator','on',    ...
+    uimenu(m, 'Label', 'Clear skipped image(s)',  ...
       'Callback', {@MenuCallback, self });
     
     m = uimenu(fig, 'Label', 'Compute');
@@ -1143,7 +1230,7 @@ function fig = build_interface(self)
       'Callback', {@MenuCallback, self });
     uimenu(m, 'Label', 'Automatic control points',        ...
       'Callback', {@MenuCallback, self },'Accelerator','a');
-    uimenu(m, 'Label', 'Clear all control points',        ...
+    uimenu(m, 'Label', 'Clear control points (this image)',        ...
       'Callback', {@MenuCallback, self },'Accelerator','c');
     uimenu(m, 'Label', 'Show sharpness',        ...
       'Callback', {@MenuCallback, self });
@@ -1155,14 +1242,14 @@ function fig = build_interface(self)
       'Callback', {@MenuCallback, self });
     uimenu(m, 'Label', 'Align', 'Separator','on',       ...
       'Callback', {@MenuCallback, self });
-    uimenu(m, 'Label', 'Stack',       ...
+    uimenu(m, 'Label', 'Stack (and Align if needed)',       ...
       'Callback', {@MenuCallback, self });
       
     m = uimenu(fig, 'Label', 'Help');
     uimenu(m, 'Label', 'About',        ...
       'Callback', {@MenuCallback, self });
     
-    % install mouse event handler on axis
+    % install mouse event handler on axis and figure
     set(gca, 'ButtonDownFcn', {@ButtonDownCallback, self }); % will get its CurrentPoint
     set(fig, 'KeyPressFcn',   {@MenuCallback, self });       % will get its CurrentCharacter
     set(fig, 'WindowScrollWheelFcn',   {@ScrollWheelCallback, self });

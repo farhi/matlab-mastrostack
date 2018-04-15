@@ -7,7 +7,7 @@ function im = imdouble(im)
     im = double(im)/2^8;
   case 'uint16'
     im = double(im)/2^16;
-  case 'double'
+  case {'double','single'}
     % do nothing
   otherwise
     im = double(im)/max(im(:));
