@@ -125,6 +125,7 @@ Ma(e)stroStack: a Matlab class to automatically align and stack astro-photograph
   - **ReadRaw** a Matlab RAW camera reader <https://github.com/farhi/matlab-readraw>
   - **astrotnstack** automatically align and stack astro-photography pictures <https://github.com/farhi/astrotnstack>. This is the initial prototype of Ma(e)stroStack.
   - optimal rotation/translation between points <http://nghiaho.com/?page_id=671>
+  - dndcontrol <https://fr.mathworks.com/matlabcentral/fileexchange/53511-drag---drop-functionality-for-java-gui-components>
 
   See also:
 
