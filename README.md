@@ -24,6 +24,7 @@ Ma(e)stroStack: a Matlab class to automatically align and stack astro-photograph
   loads images without setting their type
   
 **ma = mastrostack(light, dark)**
+
 **ma = mastrostack(light, dark, flat)**
 
   loads light, dark (background) and flat (scope response) images, and label them.
