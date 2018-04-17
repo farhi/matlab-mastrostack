@@ -118,6 +118,7 @@ classdef mastrostack < handle
   % exist           check if an image has already been loaded            
   % getdark         compute the master Dark
   % getflat         compute the master Flat
+  % help            open the help page
   % imread          load an image and return its matrix and information
   % label           label an image as light, dark, flat or skip
   % listdlg         display a selector for images
@@ -154,7 +155,7 @@ classdef mastrostack < handle
     flat    = 0;  % stored as a double in [0-1] float
     light   = 0;  % stored as a double in [0-1]
     lightN  = 0;  % stored as a uint16
-    nbControlPoints = 30;
+    nbControlPoints = 50;
     currentImage = [];  % index of the current image on figure
     dndcontrol = [];
   end % properties
@@ -824,6 +825,7 @@ classdef mastrostack < handle
         else
           [~, this_img]  = imread(self, this_img, 0);
         end
+        im = rgb2gray(im);
         
         % update waitbar and ETA display
         if numel(img) > 1 && ~isempty(wb)
@@ -844,15 +846,16 @@ classdef mastrostack < handle
           set(wb, 'Name', [ num2str(index) '/' num2str(numel(img)) ' ' eta ]);
           end
         end
-
+        
         this_img.points = ...
-            find_control_points(rgb2gray(im), self.nbControlPoints);
+            find_control_points(im, self.nbControlPoints);
         this_img.width  = ...
             sqrt(sum(this_img.points.sx.^2.*this_img.points.sy.^2)) ...
             /numel(this_img.points.sx);
         this_img.sharpness  = ...
             sqrt(sum(this_img.points.sharpness.^2)) ...
-            /numel(this_img.points.sharpness);
+            /numel(this_img.points.sharpness) ...
+            /blur_metric(im);
         self.images(this_img.index) = this_img;
       end % for
       if numel(img) > 1 && ~isempty(wb)

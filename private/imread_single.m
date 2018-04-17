@@ -19,7 +19,7 @@ function [im, img, exif] = imread_single(source, images, flag)
     try
       exif     = imfinfo(source);
       im       = imread(source);
-      disp([ mfilename ': Reading ' source ]);
+      disp([ mfilename ': Reading ' source ' (from file)']);
     catch ME
       disp([ mfilename ': Skipping ' source ]);
       return
@@ -35,7 +35,7 @@ function [im, img, exif] = imread_single(source, images, flag)
     else img = [] ; end
     % make sure we can get the image (matrix), when img was retrieved but not image
     if ~isempty(img) && flag && ischar(img.source)
-      disp([ mfilename ': Reading ' img.source ]);
+      disp([ mfilename ': Reading ' img.source ' (from image ref)' ]);
       im = imread(img.source);
       return
     end
@@ -60,14 +60,15 @@ function [im, img, exif] = imread_single(source, images, flag)
     else
       exif.Filename     = sprintf('Image_%d', numel(images)+1);
     end
-    exif.FileModDate  = datestr(now);
-    exif.FileSize     = numel(im);
     exif.Format       = 'jpg';
-    exif.FormatVersion = '';
+    exif.FormatVersion= '';
+    exif.FileModDate  = datestr(now);
+    exif.Software     = mfilename;
+    
+    exif.FileSize     = numel(im);
     exif.Width        = size(im,2);
     exif.Height       = size(im,1);
     exif.BitDepth     = size(im,3)*8;
-    exif.Software     = mfilename;
     if size(im,3) == 1
       exif.ColorType    = 'grayscale';
     else
@@ -84,13 +85,14 @@ function [im, img, exif] = imread_single(source, images, flag)
   [~,img.id]      = fileparts(exif.Filename);
   img.source      = source;
   img.image       = []; % we do not store the images. Many will be huge.
-  img.image_size  = size(im);
-  img.image_sum   = sum(double(im(:)));
   img.exif        = exif;
-  img.thumbnail   = im;
-  img.sharpness   = 0;
   img.width       = 0;
   
+  img.image_size  = size(im);
+  img.image_sum   = sum(double(im(:)));
+  img.sharpness   = 1/blur_metric(im);
+  
+  img.thumbnail   = im;
   if numel(img.thumbnail) > 1e6
     ratio         = ceil(sqrt(numel(img.thumbnail)/1e6));
     img.thumbnail = img.thumbnail(1:ratio:end, 1:ratio:end,:);

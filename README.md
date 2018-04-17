@@ -93,9 +93,10 @@ Ma(e)stroStack: a Matlab class to automatically align and stack astro-photograph
   - **cpselect**        ALIGN images on reference
   - **diff**            compute difference of an image with reference
   - **delete**          delete the mastrostack, and clear memory
-  - **exist**           check if an image has already been loaded            
+  - **exist**           check if an image has already been loaded
   - **getdark**         compute the master Dark
   - **getflat**         compute the master Flat
+  - **help**            open the help page
   - **imread**          load an image and return its matrix and information
   - **label**           label an image as light, dark, flat or skip
   - **listdlg**         display a selector for images
@@ -126,6 +127,7 @@ Ma(e)stroStack: a Matlab class to automatically align and stack astro-photograph
   - **astrotnstack** automatically align and stack astro-photography pictures <https://github.com/farhi/astrotnstack>. This is the initial prototype of Ma(e)stroStack.
   - optimal rotation/translation between points <http://nghiaho.com/?page_id=671>
   - dndcontrol <https://fr.mathworks.com/matlabcentral/fileexchange/53511-drag---drop-functionality-for-java-gui-components>
+  - blurMetric <https://fr.mathworks.com/matlabcentral/fileexchange/24676-image-blur-metric>
 
   See also:
 
