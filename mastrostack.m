@@ -1084,13 +1084,17 @@ function MenuCallback(src, evnt, self)
     end
   case 'Compute master Dark'
     self.dark = [];
-    image(im2uint(self.getdark));
+    image(self.getdark);
     title('Master Dark')
+    filename = write_stacked(self.getdark, 'master_dark');
+    disp([ mfilename ': wrote ' filename ])
   case 'Compute master Flat'
     self.flat = [];
-    im = self.getflat;
-    image(im2uint(im));
+    im = im2uint(self.getflat,'uint16');
+    image(im);
     title([ 'Master Flat ' mat2str([ min(im(:)) max(im(:)) ]) ]);
+    filename = write_stacked(im, 'master_flat');
+    disp([ mfilename ': wrote ' filename ])
   case {'Stack', 'Stack (and Align if needed)' }
     stack(self);
   case 'Align'

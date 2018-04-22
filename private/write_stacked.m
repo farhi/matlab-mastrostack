@@ -1,6 +1,7 @@
 function filename = write_stacked(im, filename, info)
   % we create a cell with PNG options for imwrite
     % clean the EXIF
+    if nargin < 3, info = struct(); end
     f = fieldnames(info);
     for index=1:numel(f)
       if isfield(info, f{index})
