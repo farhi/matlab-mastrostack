@@ -41,6 +41,7 @@ function blur = blur_metric(original, m)
 %  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
 %  POSSIBILITY OF SUCH DAMAGE.
 
+if isempty(original), blur = inf; return; end
 I = double(rgb2gray(original));
 [y x] = size(I);
 

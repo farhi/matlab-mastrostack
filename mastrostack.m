@@ -522,7 +522,7 @@ classdef mastrostack < handle
 
       % get the image
       if nargin < 3 || isempty(im) || ~isnumeric(im)
-        [im, img] = imread(self, img, 1);
+        [im, img] = imread(self, img);
       else
         [~, img] = imread(self, img, 0);
       end
@@ -572,10 +572,7 @@ classdef mastrostack < handle
       %   same as above, and specifies an output filename.
       %
       % The stacking does sum of (light - dark)/(flat - dark)
-      
-      % compute dark and flat (if not done yet)
-      getdark(self);
-      getflat(self);
+
       self.light = 0.0;
       self.lightN= uint8(0);
       ExposureTime = 0;
@@ -597,8 +594,9 @@ classdef mastrostack < handle
             if isempty(this_img.points) || ~isstruct(this_img.points) || ...
               ~isfield(this_img.points, 'x') || numel(this_img.points.x) < 2
               % compute control points
-              disp([ mfilename ':   computing control points for ' this_img.id ' (' num2str(index) ')' ])
-              this_img = cpselect(self, this_img, im);
+              disp([ mfilename ':   computing control points for ' this_img.id ' (' num2str(index) ') REF' ])
+              [this_img, self] = cpselect(self, this_img, im);
+              % self.images(self.reference) = this_img;
             end
             self.light  = imdouble(im);
             clear im
@@ -636,7 +634,8 @@ classdef mastrostack < handle
           points = this_img.points;
           if isempty(points) || numel(points.x) < 2
             disp([ mfilename ':   computing control points for ' this_img.id ' (' num2str(index) ')' ])
-            this_img = cpselect(self, this_img, im);
+            [this_img, self] = cpselect(self, this_img, im);
+            % self.images(index) = this_img;
           end
           
           % display
@@ -709,7 +708,7 @@ classdef mastrostack < handle
       end
     end % stack
     
-    function [ret_t, ret_R] = diff(self, img1)
+    function [ret_t, ret_R, self] = diff(self, img1)
       % diff: compute the translation and rotation wrt reference image
       %
       % [t,R] = diff(self, image)
@@ -719,10 +718,10 @@ classdef mastrostack < handle
       ret_t= []; ret_R = [];
       if isempty(img1) || isempty(img2), return; end
       if numel(img1.points.x) < 2
-        img1 = cpselect(self, img1);
+        [img1, self] = cpselect(self, img1);
       end
       if numel(img2.points.x) < 2
-        img2 = cpselect(self, img2);
+        [img2, self] = cpselect(self, img2);
       end
       
       if isempty(img2), return; end
@@ -792,11 +791,11 @@ classdef mastrostack < handle
         'Name', [ mfilename ': ' name ]);
     end % listdlg
     
-    function [this_img, im] = align(self, img, im)
-      [this_img, im] = cpselect(self, img, im);
+    function [this_img, self] = align(self, img, im)
+      [this_img, self] = cpselect(self, img, im);
     end
     
-    function [this_img, im] = cpselect(self, img, im)
+    function [nimg, self] = cpselect(self, img, im)
       % cpselect: automatically set control points
       %
       % cpselect(self)
@@ -807,7 +806,6 @@ classdef mastrostack < handle
       
       if nargin < 2, img=1:numel(self.images); end
       
-      
       if numel(img) > 1
         delete(findall(0, 'Tag', [ mfilename '_waitbar' ]));
         wb  = waitbar(0, [ mfilename ': Aligning images (close to abort)...' ]); 
@@ -817,45 +815,55 @@ classdef mastrostack < handle
       end
       t0 = clock; 
       
+      nimg = [];
+      
       for index=1:numel(img)
         this_img = img(index);
+        
         % get the image
-        if nargin < 3 || isempty(im) || ~isnumeric(im)
-          [im, this_img] = imread(self, this_img, 1);
-        else
-          [~, this_img]  = imread(self, this_img, 0);
-        end
-        im = rgb2gray(im);
+        [~, this_img]  = imread(self, this_img, 0);
+        if isempty(this_img.points.x) || nargin < 2
         
-        % update waitbar and ETA display
-        if numel(img) > 1 && ~isempty(wb)
-          if ~ishandle(wb)
-            disp('Align: Aborting (user closed the waitbar).')
-            break;
+          if nargin < 3 || isempty(im) || ~isnumeric(im)
+            [im, this_img] = imread(self, this_img, 1);
           end
-          % compute ETA
-          dt_from0     = etime(clock, t0);
-          dt_per_image = dt_from0/index;
-          % remaining images: numel(s)-index
-          eta    = dt_per_image*(numel(img)-index+1);
-          ending = addtodate(now, ceil(eta), 'second');
-          ending = [ 'Ending ' datestr(ending) ];
-          eta    = sprintf('ETA %i [s]. %s', round(eta), ending);
-          waitbar(index/numel(img), wb, [ 'Align: ' this_img.id ' (close to abort)...' ]);
-          try
-          set(wb, 'Name', [ num2str(index) '/' num2str(numel(img)) ' ' eta ]);
+          im = rgb2gray(im);
+          
+          % update waitbar and ETA display
+          if numel(img) > 1 && ~isempty(wb)
+            if ~ishandle(wb)
+              disp('Align: Aborting (user closed the waitbar).')
+              break;
+            end
+            % compute ETA
+            dt_from0     = etime(clock, t0);
+            dt_per_image = dt_from0/index;
+            % remaining images: numel(s)-index
+            eta    = dt_per_image*(numel(img)-index+1);
+            ending = addtodate(now, ceil(eta), 'second');
+            ending = [ 'Ending ' datestr(ending) ];
+            eta    = sprintf('ETA %i [s]. %s', round(eta), ending);
+            waitbar(index/numel(img), wb, [ 'Align: ' this_img.id ' (close to abort)...' ]);
+            try
+            set(wb, 'Name', [ num2str(index) '/' num2str(numel(img)) ' ' eta ]);
+            end
+          end
+          
+          this_img.points = ...
+              find_control_points(im, self.nbControlPoints);
+          this_img.width  = ...
+              sqrt(sum(this_img.points.sx.^2.*this_img.points.sy.^2)) ...
+              /numel(this_img.points.sx);
+          this_img.sharpness  = ...
+              sqrt(sum(this_img.points.sharpness.^2)) ...
+              /numel(this_img.points.sharpness);
+          if isfinite(this_img.blur_metric)
+            this_img.sharpness = this_img.sharpness/this_img.blur_metric;
           end
         end
         
-        this_img.points = ...
-            find_control_points(im, self.nbControlPoints);
-        this_img.width  = ...
-            sqrt(sum(this_img.points.sx.^2.*this_img.points.sy.^2)) ...
-            /numel(this_img.points.sx);
-        this_img.sharpness  = ...
-            sqrt(sum(this_img.points.sharpness.^2)) ...
-            /numel(this_img.points.sharpness) ...
-            /blur_metric(im);
+        if isempty(nimg), nimg = this_img;
+        else nimg = [ nimg this_img]; end
         self.images(this_img.index) = this_img;
       end % for
       if numel(img) > 1 && ~isempty(wb)
@@ -975,17 +983,17 @@ function MenuCallback(src, evnt, self)
     self = get(gcf, 'UserData');
     switch evnt.DropType
     case 'file'
-        for n = 1:numel(evnt.Data)
-            self.load(deblank(evnt.Data{n}));
-        end
+      lines = deblank(evnt.Data);
     case 'string'
-        lines = textscan(evnt.Data, '%s','Delimiter',sprintf('\r\n'));
-        if isempty(lines), retuen; end
-        lines = lines{1};
-        for n = 1:numel(lines)
-          this = deblank(lines{n});
-          if ~isempty(this), self.load(this); end
-        end
+      lines = textscan(evnt.Data, '%s','Delimiter',sprintf('\r\n'));
+      if isempty(lines), return; end
+      lines = lines{1};
+    end
+    
+    % now import files
+    for n = 1:numel(lines)
+      this = deblank(lines{n});
+      if ~isempty(this), self.load(this); end
     end
     return
   end
@@ -1204,9 +1212,7 @@ function fig = build_interface(self)
     uimenu(m, 'Label', 'Open flat images',        ...
       'Callback', {@MenuCallback, self });
     uimenu(m, 'Label', 'Save',        ...
-      'Callback', 'filemenufcn(gcbf,''FileSave'')','Accelerator','s');
-    uimenu(m, 'Label', 'Save As...',        ...
-      'Callback', 'filemenufcn(gcbf,''FileSaveAs'')');
+      'Callback', {@MenuCallback, self },'Accelerator','s');
     uimenu(m, 'Label', 'Print',        ...
       'Callback', 'printdlg(gcbf)');
     uimenu(m, 'Label', 'Close',        ...

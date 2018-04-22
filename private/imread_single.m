@@ -18,7 +18,7 @@ function [im, img, exif] = imread_single(source, images, flag)
     % check if image exists
     try
       exif     = imfinfo(source);
-      im       = imread(source);
+      if flag, im       = imread(source); end
       disp([ mfilename ': Reading ' source ' (from file)']);
     catch ME
       disp([ mfilename ': Skipping ' source ]);
@@ -37,7 +37,6 @@ function [im, img, exif] = imread_single(source, images, flag)
     if ~isempty(img) && flag && ischar(img.source)
       disp([ mfilename ': Reading ' img.source ' (from image ref)' ]);
       im = imread(img.source);
-      return
     end
   elseif isnumeric(source) && ~isempty(source)
     exif     = [];
@@ -51,7 +50,7 @@ function [im, img, exif] = imread_single(source, images, flag)
     return
   end
 
-  if isempty(im) return; end
+  if flag && isempty(im) return; end
 
   % create fake exif if not set
   if isempty(exif)
@@ -80,27 +79,36 @@ function [im, img, exif] = imread_single(source, images, flag)
     exif.ExposureTime = exif.DigitalCamera.ExposureTime;
   end
   
-  % create the img structure holding information and EXIF
-  img.index       = numel(images)+1;
-  [~,img.id]      = fileparts(exif.Filename);
-  img.source      = source;
-  img.image       = []; % we do not store the images. Many will be huge.
-  img.exif        = exif;
-  img.width       = 0;
-  
-  img.image_size  = size(im);
-  img.image_sum   = sum(double(im(:)));
-  img.sharpness   = 1/blur_metric(im);
-  
-  img.thumbnail   = im;
-  if numel(img.thumbnail) > 1e6
-    ratio         = ceil(sqrt(numel(img.thumbnail)/1e6));
-    img.thumbnail = img.thumbnail(1:ratio:end, 1:ratio:end,:);
+  if ~isstruct(img)
+    % create the img structure holding information and EXIF
+    img.index       = numel(images)+1;
+    [~,img.id]      = fileparts(exif.Filename);
+    img.source      = source;
+    img.image       = []; % we do not store the images. Many will be huge.
+    img.exif        = exif;
+    img.width       = 0;
+    img.image_size  = 0;
+    img.image_sum   = 0;
+    img.sharpness   = 0;
+    img.blur_metric = inf;
+    img.thumbnail   = [];
+    % these will be set later
+    img.type        = [];
+    img.points      = struct('x',[],'y',[],'handle',[],'m',[], ...
+      'sx',[],'sy',[], 'sharpness', []);
   end
-    
-  % these will be set later
-  img.type        = [];
-  img.points      = struct('x',[],'y',[],'handle',[],'m',[], ...
-    'sx',[],'sy',[], 'sharpness', []);
+  if ~isempty(im)
+    if ~isfinite(img.blur_metric), img.blur_metric = blur_metric(im); end
+    img.image_size  = size(im);
+    img.image_sum   = sum(double(im(:)));
+    img.thumbnail   = im;
+    if numel(img.thumbnail) > 1e6
+      ratio         = ceil(sqrt(numel(img.thumbnail)/1e6));
+      img.thumbnail = img.thumbnail(1:ratio:end, 1:ratio:end,:);
+    end
+  end
+  if all(img.image_size == 0) && isfield(img.exif,'Width') && isfield(img.exif,'Height')
+    img.image_size = [ img.exif.Width img.exif.Height ];
+  end
   
 end % imread_single
