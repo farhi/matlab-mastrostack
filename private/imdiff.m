@@ -13,6 +13,7 @@ function [ret_t, ret_R, theta] = imdiff(self, img1, img2)
       % the images should have the same scaling
       tol_trans = self.toleranceTranslation;      % in percent
       tol_trans = tol_trans*min(img2.image_size); % in pixels
+      tol_trans = max(tol_trans, 20);
       tol_rot   = self.toleranceRotation;         % in deg
       [x1,y1,x2,y2, p1_orig,p2_orig, p1_axis,p2_axis] = ...
         analyse_dist_angles(img1.points, img2.points, tol_trans, tol_rot);

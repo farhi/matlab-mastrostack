@@ -90,22 +90,13 @@ function [im, img, exif] = imread_single(source, images, flag)
     img.image_size  = 0;
     img.image_sum   = 0;
     img.sharpness   = 0;
-    img.blur_metric = inf;
-    img.thumbnail   = [];
-    % these will be set later
     img.type        = [];
     img.points      = struct('x',[],'y',[],'handle',[],'m',[], ...
       'sx',[],'sy',[], 'sharpness', []);
   end
   if ~isempty(im)
-    if ~isfinite(img.blur_metric), img.blur_metric = blur_metric(im); end
     img.image_size  = size(im);
     img.image_sum   = sum(double(im(:)));
-    img.thumbnail   = im;
-    if numel(img.thumbnail) > 1e6
-      ratio         = ceil(sqrt(numel(img.thumbnail)/1e6));
-      img.thumbnail = img.thumbnail(1:ratio:end, 1:ratio:end,:);
-    end
   end
   if all(img.image_size == 0) && isfield(img.exif,'Width') && isfield(img.exif,'Height')
     img.image_size = [ img.exif.Width img.exif.Height ];

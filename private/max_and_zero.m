@@ -28,7 +28,7 @@ function [x1,y1, m1, im1, sx, sy, iter, sharpness] = max_and_zero(im1, dx, dy, i
   dy1 = round((y1-dy):(y1+dy));
   dx1=dx1(dx1>=1 & dx1 <=size(im1,1));
   dy1=dy1(dy1>=1 & dy1 <=size(im1,2));
-  sharpness = image_sharpness(im1(dx1,dy1));
+  sharpness    = image_sharpness(im1(dx1,dy1));
   im1(dx1,dy1) = 0;
   
   if iter>5, return; end

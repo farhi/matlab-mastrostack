@@ -572,6 +572,10 @@ classdef mastrostack < handle
       %   same as above, and specifies an output filename.
       %
       % The stacking does sum of (light - dark)/(flat - dark)
+      
+      % get dark and flat
+      getdark(self);
+      getflat(self);
 
       self.light = 0.0;
       self.lightN= uint8(0);
@@ -857,9 +861,6 @@ classdef mastrostack < handle
           this_img.sharpness  = ...
               sqrt(sum(this_img.points.sharpness.^2)) ...
               /numel(this_img.points.sharpness);
-          if isfinite(this_img.blur_metric)
-            this_img.sharpness = this_img.sharpness/this_img.blur_metric;
-          end
         end
         
         if isempty(nimg), nimg = this_img;
