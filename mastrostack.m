@@ -74,12 +74,11 @@ classdef mastrostack < handle
   %  Optionally, use the Compute/Align item to compute the images control points
   %  (stars) which also corrects for background and scope response when dark and flat
   %  are defined. This procedure computes a metric to quantify the sharpness. You may
-  %  then select the 'Compute/Show sharpness' menu item which metric is highest for
+  %  then select the 'Compute/Select on sharpness' menu item which metric is highest for
   %  clearer images, and low for blurred/moved ones. The axis is the image index. To
-  %  automatically select best images, use the menu item 'Compute/Select on
-  %  sharpness' and set a threshold. All images above will be selected, and those
-  %  below will be marked as 'skip'. This automatic procedure is not optimal, and a
-  %  manual check, as above, should be preferred.
+  %  select best images, use the left-click to set label as 'skip', right-click to 
+  %  set label as 'light', shift-click to open that image and any key to
+  %  abort.
   %
   %  Stacking
   %  --------
@@ -703,7 +702,7 @@ classdef mastrostack < handle
         if ischar(this_img.source)
           p = fileparts(this_img.source);
         else p = pwd; end
-        filename = fullfile(p, [ this_img.id '.png' ]);
+        filename = fullfile(p, [ this_img.id '_stacked.png' ]);
       end
       write_stacked(self.light, filename, this_img.exif);
       disp([ mfilename ': Stacking DONE. Elapsed time ' num2str(etime(clock, t0)) ' [s]' ])
@@ -1098,15 +1097,11 @@ function MenuCallback(src, evnt, self)
     self.dark = [];
     image(self.getdark);
     title('Master Dark')
-    filename = write_stacked(self.getdark, 'master_dark');
-    disp([ mfilename ': wrote ' filename ])
   case 'Compute master Flat'
     self.flat = [];
     im = im2uint(self.getflat,'uint16');
     image(im);
     title([ 'Master Flat ' mat2str([ min(im(:)) max(im(:)) ]) ]);
-    filename = write_stacked(im, 'master_flat');
-    disp([ mfilename ': wrote ' filename ])
   case {'Stack', 'Stack (and Align if needed)' }
     stack(self);
   case 'Align'
@@ -1148,8 +1143,6 @@ function MenuCallback(src, evnt, self)
     delete(self.dndcontrol);
     self.dndcontrol = [];
     delete(gcf);
-  case 'Show sharpness'
-    figure; plot_sharpness(self.images);
   case 'Set tolerances'
     prompt={'\bf {\color{blue}Translation} (0-1, e.g 0.01):','\bf {\color{blue}Rotation} [deg, e.g. 3]:', ...
       '\bf {\color{blue}Nb of Control Points} [e.g. 30]:'};
@@ -1170,25 +1163,105 @@ function MenuCallback(src, evnt, self)
       self.toleranceRotation = str2double(answer{2});
     end
   case 'Select images on sharpness...'
-    figure; [h, x_light, y_light] = plot_sharpness(self.images);
-    title('Sharpness: Click on threshold - lower images will be marked as SKIP');
-    [x,y,but] = ginput(1);
-    if ~isempty(but) && but==1
-      disp([ mfilename ': sharpness selection: ' num2str(y) ]);
+    fig=figure('Name', [ mfilename ': Sharpness' ]); 
+    if isempty(self.images), close(fig); return; end
+    [h, x, y, xs, ys] = plot_sharpness(self.images);
+    
+    % loop until user press key
+    flag = true;
+    while flag
+      try
+        k = waitforbuttonpress;
+      catch
+        return % no more active window
+      end
+      % determines what has been pressed
+      key = get(gcf, 'CurrentCharacter');
+      p1  = get(gca, 'CurrentPoint');
+      but = get(gcf, 'SelectionType'); % = 'normal': left or 'alt': right
       
-      selection = find(y_light <= y);
-      selection = x_light(selection);
+      % key pressed: test if we exit the loop
+      if ~isempty(key) || k == 1
+        return
+      end
+
+      switch but
+      case 'alt'              % ctrl-click or right button
+        title('Setting to Light images')
+        x = xs; y = ys;
+      case 'normal'           % left-button
+        title('Setting to Skip images')
+      case {'open','extend'}  % shift-click or middle-button
+        title('Opening first image')
+      end
+      % drag rectangle and get area [x y width height]
+      point1 = get(gca,'CurrentPoint');    % button down detected
+      finalRect = rbbox;                   % return figure units 
+      point2 = get(gca,'CurrentPoint');    % button up detected
+      point1 = point1(1,1:2);              % extract x and y
+      point2 = point2(1,1:2);
+      p1 = min(point1,point2);             % calculate locations
+      p2 = max(point1,point2);
+      
+      % determine which images are in the rectangle
+      selection = find(x >= p1(1) & x <= p2(1) ...
+                    &  y >= p1(2) & y <= p2(2));
+      selection = x(selection); % image indices
+      
+      % (de-)select and replot
       for index=selection(:)'
-        self.images(index).type='skip';
+        if strcmp(but, 'normal')
+          self.images(index).type='skip';
+        elseif strcmp(but, 'alt')
+          self.images(index).type='light';
+        else
+          plot(self, index);
+          figure(fig);
+          break
+        end
       end
       cla;
-      [h, x_light, y_light] = plot_sharpness(self.images);
-      h=line([1 numel(self.images)], [y y]); set(h, 'LineStyle','--','Color','r');
+      [h, x, y, xs, ys] = plot_sharpness(self.images);
+      
     end
   case 'About'
     about(self);
   case 'Help'
     help(self);
+  case {'Save stacked image','Save master Dark', ...
+        'Save master Flat',  'Save current image' }
+    exif = []; im = [];
+    if strfind(action, 'stacked')
+      if self.reference
+        this_img = self.images(self.reference);
+        exif     = this_img.exif;
+      end
+      im       = self.light;
+    elseif strfind(action, 'Dark')
+      im       = self.getdark;
+    elseif strfind(action, 'Flat')
+      im       = im2uint(self.getflat,'uint16');
+    elseif strfind(action, 'current')
+      im = findall(gca, 'Type','image');
+      im = get(im, 'CData');
+    end
+    if isempty(im), return; end
+    
+    [filename, pathname, filterindex] = uiputfile( ...
+      {'*.png;*.jpg;*.tiff', 'All image Files (PNG, JPG, TIFF)';
+        '*.png',  'PNG image (*.png)'; ...
+        '*.jpg',  'JPEG image (*.jpg)'; ...
+        '*.tiff', 'TIFF image (*.tiff)'; ...
+        '*.*',  'All Files (*.*)'}, ...
+        action);
+    if isequal(filename,0) || isequal(pathname,0)
+      return
+    end
+    filename = fullfile(pathname, filename);
+    
+    exif.Comment = action;
+    write_stacked(im, filename, exif);
+    disp([ mfilename ': ' action ' as ' filename ])
   otherwise
     disp([ mfilename ': unknown action ' action ])
   end
@@ -1212,8 +1285,14 @@ function fig = build_interface(self)
       'Callback', {@MenuCallback, self });
     uimenu(m, 'Label', 'Open flat images',        ...
       'Callback', {@MenuCallback, self });
-    uimenu(m, 'Label', 'Save',        ...
+    uimenu(m, 'Label', 'Save stacked image',        ...
       'Callback', {@MenuCallback, self },'Accelerator','s');
+    uimenu(m, 'Label', 'Save master Dark',        ...
+      'Callback', {@MenuCallback, self });
+    uimenu(m, 'Label', 'Save master Flat',        ...
+      'Callback', {@MenuCallback, self });
+    uimenu(m, 'Label', 'Save current image',        ...
+      'Callback', {@MenuCallback, self });
     uimenu(m, 'Label', 'Print',        ...
       'Callback', 'printdlg(gcbf)');
     uimenu(m, 'Label', 'Close',        ...
@@ -1254,8 +1333,6 @@ function fig = build_interface(self)
       'Callback', {@MenuCallback, self },'Accelerator','a');
     uimenu(m, 'Label', 'Clear control points (this image)',        ...
       'Callback', {@MenuCallback, self },'Accelerator','c');
-    uimenu(m, 'Label', 'Show sharpness',        ...
-      'Callback', {@MenuCallback, self });
     uimenu(m, 'Label', 'Select images on sharpness...',        ...
       'Callback', {@MenuCallback, self });
     uimenu(m, 'Label', 'Compute master Dark', 'Separator','on',        ...

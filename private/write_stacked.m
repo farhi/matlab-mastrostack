@@ -38,6 +38,19 @@ function filename = write_stacked(im, filename, info)
     if ~isfield(info,'YResolution'), info.YResolution = 350; end
     if ~isfield(info,'Model'),       info.Model       = version; end
     if ~isfield(info,'Make'),        info.Make       = 'Matlab'; end
+    info.Filename     = filename;
+    info.FileModDate  = datestr(now);
+    info.Software     = mfilename;
+    
+    info.FileSize     = numel(im);
+    info.Width        = size(im,2);
+    info.Height       = size(im,1);
+    info.BitDepth     = size(im,3)*8;
+    if size(im,3) == 1
+      exif.ColorType    = 'grayscale';
+    else
+      exif.ColorType    = 'truecolor';
+    end
     args={ ...
       'XResolution', info.XResolution , ...
       'YResolution', info.YResolution , ...
@@ -49,8 +62,6 @@ function filename = write_stacked(im, filename, info)
       'Source', [ info.Model ' ' info.Make ] , ...
       'Comment', desc };
     % writing stacked image
-    [p,f] = fileparts(filename);
-    filename = fullfile(p, [ f '_stacked.png' ]);
     disp([ mfilename ': writing ' filename ])
     warning('off','MATLAB:writepng:changedTextChunk')
     try
