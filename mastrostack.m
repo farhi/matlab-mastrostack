@@ -1300,7 +1300,7 @@ function select_on_sharpness(self)
   
   [h, x, y, xs, ys] = plot_sharpness(self.images, self.currentImage);
   
-  t = { [ mfilename ': Sharpness selection' ], ...
+  t = { [ 'mastrostack: Sharpness selection' ], ...
     'You may select a rectangle area with the mouse, using:', ...
     '  LEFT       button   selected images are set to SKIP/IGNORE', ...
     '  RIGHT      button   selected images are set to LIGHT', ...
@@ -1314,8 +1314,8 @@ function select_on_sharpness(self)
   
   if isempty(first_use)
     first_use = false;
-    fprintf(1, t{:});
-    helpdlg(t, [ mfilename ': Sharpness selection Help' ]);
+    fprintf(1, '%s\n', t{:});
+    % helpdlg(t, [ mfilename ': Sharpness selection Help' ]);
   end
   
   % loop until user press key
