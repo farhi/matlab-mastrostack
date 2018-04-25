@@ -125,7 +125,6 @@ classdef mastrostack < handle
   % mastrostack     create the Ma(e)strostack session
   % plot            plot the user interface and images
   % stack           STACK light images, correcting with dark and flat.
-  % save            save the session
   %
   % (c) E. Farhi, 2018. GPL2.
 
@@ -155,7 +154,7 @@ classdef mastrostack < handle
     light   = 0;  % stored as a double in [0-1]
     lightN  = 0;  % stored as a uint16
     nbControlPoints = 50;
-    currentImage = [];  % index of the current image on figure
+    currentImage = 0;  % index of the current image on figure
     dndcontrol = [];
   end % properties
   
@@ -323,11 +322,8 @@ classdef mastrostack < handle
     function save(self, filename)
       % save: save the maestrostack session
       if nargin < 2, filename = 'mastrostack_session.mat'; end
-      dnd = self.dndcontrol;
-      self.dndcontrol = []; % not serializable
       builtin(@save, 'self', filename);
       disp([ mfilename ': saved as ' filename ]);
-      self.dndcontrol = dnd;
     end 
     
     % compute stuff ============================================================
@@ -617,7 +613,7 @@ classdef mastrostack < handle
       wb  = waitbar(0, [ mfilename ': Stacking ' num2str(nbtostack) ' images (close to abort)...' ]); 
       set(wb, 'Tag', [ mfilename '_waitbar' ]);
       t0 = clock; stackedimages = 0;
-      disp([ mfilename ':   Stacking ' num2str(nbtostack) ' images...' ])
+      disp([ mfilename ':   Stacking ' num2str(nbtostack) ' images... ' datestr(now) ])
       
       for index=1:numel(self.images)
         this_img = self.images(index);
@@ -705,7 +701,7 @@ classdef mastrostack < handle
         filename = fullfile(p, [ this_img.id '_stacked.png' ]);
       end
       write_stacked(self.light, filename, this_img.exif);
-      disp([ mfilename ': Stacking DONE. Elapsed time ' num2str(etime(clock, t0)) ' [s]' ])
+      disp([ mfilename ': Stacking DONE. Elapsed time ' num2str(etime(clock, t0)) ' [s] ' datestr(now) ])
       if nargout
         im        = self.light;
       end
@@ -813,7 +809,7 @@ classdef mastrostack < handle
         delete(findall(0, 'Tag', [ mfilename '_waitbar' ]));
         wb  = waitbar(0, [ mfilename ': Aligning images (close to abort)...' ]); 
         set(wb, 'Tag', [ mfilename '_waitbar' ]);
-        disp([ mfilename ':   Aligning...' ])
+        disp([ mfilename ':   Aligning... ' datestr(now) ])
       else wb = [];
       end
       t0 = clock; 
@@ -868,6 +864,7 @@ classdef mastrostack < handle
       end % for
       if numel(img) > 1 && ~isempty(wb)
         delete(findall(0, 'Tag', [ mfilename '_waitbar' ]));
+        disp([ mfilename ':   Alignment done ' datestr(now) ])
       end
       
     end % cpselect
@@ -964,8 +961,10 @@ function MenuCallback(src, evnt, self)
     target = uicontrol('style','pushbutton','String','Drop Files Here', ...
       'Units','normalized', 'Position', [ 0 0 0.3 0.07 ], ...
       'ToolTipString','Drop files or click me', ...
+      'Tag','mastrostack_DropMeHere', ...
       'callback', {@MenuCallback, self });
-    self.dndcontrol = dndcontrol(target,@MenuCallback,@MenuCallback);
+    dndcontrol(target,@MenuCallback,@MenuCallback);
+    self.dndcontrol = target;
   end
 
   if ishandle(src) && isempty(evnt) % menu callback
@@ -1000,22 +999,16 @@ function MenuCallback(src, evnt, self)
 
   switch action
   case {'LEFTARROW','PAGEUP','UPARROW','P','Previous image'}   % previous
-    if isempty(self.currentImage) || self.currentImage < 2
-      self.currentImage = 2;
-    end
-    plot(self, self.currentImage-1);
-  case {'RIGHTARROW','PAGEDOWN','DOWNARROW','N','Next image'}  % next
-    if isempty(self.currentImage) || self.currentImage>=numel(self.images)
-      self.currentImage = numel(self.images)-1;
-    end
-    plot(self, self.currentImage+1);
+    plot(self, max(1, self.currentImage-1));
+  case {'RIGHTARROW','PAGEDOWN','DOWNARROW','N','Next image',' ','SPACE'}  % next
+    plot(self, min(numel(self.images), self.currentImage+1));
   case {'L'}  % Light
     label(self, 'light', self.currentImage);
   case {'D'}  % Dark
     label(self, 'dark', self.currentImage);
   case {'F'}  % Flat
     label(self, 'flat', self.currentImage);
-  case {'I'}
+  case {'I','S'}
     label(self, 'skip', self.currentImage);
     if self.currentImage<numel(self.images)
       plot(self, self.currentImage+1);
@@ -1128,7 +1121,7 @@ function MenuCallback(src, evnt, self)
         self.reference = index;
       end    
     end
-    self.currentImage = [];
+    self.currentImage = 0;
   case 'Clear skipped image(s)'
     disp([ mfilename ': Removing skipped images:' ]);
     for index=numel(self.images):-1:1
@@ -1140,7 +1133,6 @@ function MenuCallback(src, evnt, self)
       end
     end
   case 'Close'
-    delete(self.dndcontrol);
     self.dndcontrol = [];
     delete(gcf);
   case 'Set tolerances'
@@ -1163,67 +1155,7 @@ function MenuCallback(src, evnt, self)
       self.toleranceRotation = str2double(answer{2});
     end
   case 'Select images on sharpness...'
-    fig=figure('Name', [ mfilename ': Sharpness' ]); 
-    if isempty(self.images), close(fig); return; end
-    [h, x, y, xs, ys] = plot_sharpness(self.images);
-    
-    % loop until user press key
-    flag = true;
-    while flag
-      try
-        k = waitforbuttonpress;
-      catch
-        return % no more active window
-      end
-      % determines what has been pressed
-      key = get(gcf, 'CurrentCharacter');
-      p1  = get(gca, 'CurrentPoint');
-      but = get(gcf, 'SelectionType'); % = 'normal': left or 'alt': right
-      
-      % key pressed: test if we exit the loop
-      if ~isempty(key) || k == 1
-        return
-      end
-
-      switch but
-      case 'alt'              % ctrl-click or right button
-        title('Setting to Light images')
-        x = xs; y = ys;
-      case 'normal'           % left-button
-        title('Setting to Skip images')
-      case {'open','extend'}  % shift-click or middle-button
-        title('Opening first image')
-      end
-      % drag rectangle and get area [x y width height]
-      point1 = get(gca,'CurrentPoint');    % button down detected
-      finalRect = rbbox;                   % return figure units 
-      point2 = get(gca,'CurrentPoint');    % button up detected
-      point1 = point1(1,1:2);              % extract x and y
-      point2 = point2(1,1:2);
-      p1 = min(point1,point2);             % calculate locations
-      p2 = max(point1,point2);
-      
-      % determine which images are in the rectangle
-      selection = find(x >= p1(1) & x <= p2(1) ...
-                    &  y >= p1(2) & y <= p2(2));
-      selection = x(selection); % image indices
-      
-      % (de-)select and replot
-      for index=selection(:)'
-        if strcmp(but, 'normal')
-          self.images(index).type='skip';
-        elseif strcmp(but, 'alt')
-          self.images(index).type='light';
-        else
-          plot(self, index);
-          figure(fig);
-          break
-        end
-      end
-      cla;
-      [h, x, y, xs, ys] = plot_sharpness(self.images);
-      
-    end
+    select_on_sharpness(self);
   case 'About'
     about(self);
   case 'Help'
@@ -1356,3 +1288,108 @@ function fig = build_interface(self)
     set(fig, 'WindowScrollWheelFcn',   {@ScrollWheelCallback, self });
     set(fig, 'UserData',self);
 end % build_interface
+
+function select_on_sharpness(self)
+
+  persistent first_use
+
+  fig=figure('Name', [ mfilename ': Sharpness' ]); 
+  if isempty(self.images), close(fig); return; end
+  
+  
+  
+  [h, x, y, xs, ys] = plot_sharpness(self.images, self.currentImage);
+  
+  t = { [ mfilename ': Sharpness selection' ], ...
+    'You may select a rectangle area with the mouse, using:', ...
+    '  LEFT       button   selected images are set to SKIP/IGNORE', ...
+    '  RIGHT      button   selected images are set to LIGHT', ...
+    '  SHIFT-LEFT button   open first image in selection', ...
+    '  LEFT/UP    arrow    go to previous image', ...
+    '  DOWN/RIGHT arrow    go to next image', ...
+    '  G          key      goto image (selection from dialogue)', ...
+    '  I/S        key      current image is set to IGNORE/SKIP', ...
+    '  L          key      current image is set to LIGHT', ...
+    '  X/Q/ESC    key      abort' };
+  
+  if isempty(first_use)
+    first_use = false;
+    fprintf(1, t{:});
+    helpdlg(t, [ mfilename ': Sharpness selection Help' ]);
+  end
+  
+  % loop until user press key
+  while true
+    try
+      k = waitforbuttonpress;
+    catch
+      return % no more active window
+    end
+    % determines what has been pressed
+    key = get(gcf, 'CurrentCharacter');
+    p1  = get(gca, 'CurrentPoint');
+    but = get(gcf, 'SelectionType'); % = 'normal': left or 'alt': right
+    
+    % key pressed: test if we exit the loop
+    if ~isempty(key) || k == 1
+      if key == 28 || key == 30 || key == double('p')     % left/up  arrow
+        plot(self, max(1, self.currentImage-1));
+        figure(fig);
+      elseif key == 29 || key == 31 || key == double('n') || key == 32 % right/down arrow
+        plot(self, min(numel(self.images), self.currentImage+1));
+        figure(fig);
+      elseif key == double('i') || key == double('s') % Ignore/Skip
+        self.images(self.currentImage).type = 'skip';
+      elseif key == double('l') % Light
+        self.images(self.currentImage).type = 'light';
+      elseif key == double('g') % Goto image
+        selection = listdlg(self, 'select image to go to','single');
+        if ~isempty(selection)
+          plot(self, selection);
+          figure(fig);
+        end
+      elseif key == 27 || key == double('x') || key == double('q') % ESC/quit
+        return
+      end
+    end
+
+    switch but
+    case 'alt'              % ctrl-click or right button
+      title('Setting images to Light')
+      x = xs; y = ys;
+    case 'normal'           % left-button
+      title('Setting images to Skip')
+    case {'open','extend'}  % shift-click or middle-button
+      title('Opening first image')
+    end
+    % drag rectangle and get area [x y width height]
+    point1 = get(gca,'CurrentPoint');    % button down detected
+    finalRect = rbbox;                   % return figure units 
+    point2 = get(gca,'CurrentPoint');    % button up detected
+    point1 = point1(1,1:2);              % extract x and y
+    point2 = point2(1,1:2);
+    p1 = min(point1,point2);             % calculate locations
+    p2 = max(point1,point2);
+    
+    % determine which images are in the rectangle
+    selection = find(x >= p1(1) & x <= p2(1) ...
+                  &  y >= p1(2) & y <= p2(2));
+    selection = x(selection); % image indices
+    
+    % (de-)select and replot
+    for index=selection(:)'
+      if strcmp(but, 'normal')
+        self.images(index).type='skip';
+      elseif strcmp(but, 'alt')
+        self.images(index).type='light';
+      else
+        plot(self, index);
+        figure(fig);
+        break
+      end
+    end
+    cla;
+    [h, x, y, xs, ys] = plot_sharpness(self.images, self.currentImage);
+    
+  end % while
+end % select_on_sharpness

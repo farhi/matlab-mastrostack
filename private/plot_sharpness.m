@@ -1,6 +1,7 @@
-function [h, x_light, y_light, x_skip, y_skip]=plot_sharpness(images)
+function [h, x_light, y_light, x_skip, y_skip]=plot_sharpness(images, current)
   
-  y = [ images.sharpness ]./[ images.width ];
+  if nargin < 2, current = 0; end
+  y = [ images.sharpness ]; % ./[ images.width ];
   y(~isfinite(y)) = nan;
   % we create data sets for Dark, Light, Flat and Skipped images
   x_dark=[]; x_light=[]; x_flat=[]; x_skip=[];
@@ -29,6 +30,10 @@ function [h, x_light, y_light, x_skip, y_skip]=plot_sharpness(images)
   h2=plot(x_dark, y_dark,  'ks');
   h3=plot(x_flat, y_flat,  'mv');
   h4=plot(x_skip, y_skip,  'gx');
+  if current >=1 && current <= numel(images)
+    h5=plot(current, y(current), 'c+'); set(h5, 'MarkerSize',10);
+  else h5=[];
+  end
   set(gca, 'YScale','log');
   % set-up the legend
   leg = {};
@@ -36,11 +41,12 @@ function [h, x_light, y_light, x_skip, y_skip]=plot_sharpness(images)
   if ~isempty(h2), leg{end+1} = 'Dark'; end
   if ~isempty(h3), leg{end+1} = 'Flat'; end
   if ~isempty(h4), leg{end+1} = 'Skip'; end
+  if ~isempty(h5), leg{end+1} = 'Current'; end
   hold off
   xlabel('Image index')
   ylabel('Sharpness (higher is better)');
-  title('Sharpness: {\color{blue}Left-clik}:SKIP {\color{blue}right-click}:LIGHT {\color{blue}shift-click} OPEN {\color{blue}key}:END');
-  h = [ h1, h2, h3, h4 ];
+  title('Sharpness: {\color{blue}Left-clik}:SKIP {\color{blue}right-click}:LIGHT {\color{blue}shift-click} OPEN');
+  h = [ h1, h2, h3, h4, h5 ];
   legend(h, leg);
   xlim([ 0 numel(images)+1 ])
   

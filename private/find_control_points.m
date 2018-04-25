@@ -1,5 +1,7 @@
 function points = find_control_points(im, N)
   % find_control_points: find N points separated with tol_trans*10 pixels
+  if nargin < 2, N=30; end
+  if ndims(im) == 3, im = rgb2gray(im); end
   
   points = [];
   if isempty(im), return; end

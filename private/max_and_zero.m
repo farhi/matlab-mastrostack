@@ -18,6 +18,7 @@ function [x1,y1, m1, im1, sx, sy, iter, sharpness] = max_and_zero(im1, dx, dy, i
     dy = round(size(im1,2)*dy);
   end
   sharpness = 0;
+  if ndims(im1) == 3, im1 = rgb2gray(im1); end
   
   % search for max intensity
   [m1,x1]=max(im1(:)); m1 = double(m1);
