@@ -57,7 +57,7 @@ classdef mastrostack < handle
   %
   %  Preparing the Stacking
   %  ----------------------
-  %  After importing the files, you should label them using the 'Image/Mark as...'
+  %  After importing the files, you may label them using the 'Image/Mark as...'
   %  menu items. You can navigate within images with the Image/Goto menu item, and
   %  the arrow keys, or the mouse wheel. 'Bad' images can be skipped (ignored). To
   %  use them back, set their type to 'light'. You should then compute the master
@@ -77,7 +77,7 @@ classdef mastrostack < handle
   %  then select the 'Compute/Select on sharpness' menu item which metric is highest for
   %  clearer images, and low for blurred/moved ones. The axis is the image index. To
   %  select best images, use the left-click to set label as 'skip', right-click to 
-  %  set label as 'light', shift-click to open that image and any key to
+  %  set label as 'light', shift-click to open that image and any ESC to
   %  abort.
   %
   %  Stacking

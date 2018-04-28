@@ -10,9 +10,9 @@ Ma(e)stroStack: a Matlab class to automatically align and stack astro-photograph
    
    This function does not make use of the phase correlation technique, but operates directly on the images. It assumes that at least two bright stars remain on each picture, but tolerate translations and rotations, as well as stars/control points that appear/disappear on the field of view. The procedure also ignores very sharp peaks, assuming they originate from dead pixels (and would then be static over images, leading to traces).
    
-   It is highly recommended to specify a **dark** frame filename, which will be subtracted to all images, in order to e.g. remove most hot/dead pixels. To get such a 'dark', use your camera alone and shot once with the cap on, same settings as the other pictures (duration, ISO). Image should be full black.
+   It is highly recommended to specify a **dark** frame filename, which will be subtracted to all images, in order to e.g. remove most hot/dead pixels. To get such a 'dark', use your camera alone and shoot with the cap on, same settings as the other pictures (duration, ISO). Image should be full black.
 
-  You may as well specify a **flat** frame filename, which will be divided to all images, in order to counter vignetting (darker borders). To get such a 'flat', shot once with the scope pointing at a uniform view (sky, white wall). Adapt the duration so that you get a rather gray image (not full black or white).
+  You may as well specify a **flat** frame filename, which will be divided to all images, in order to counter vignetting (darker borders). To get such a 'flat', shoot with the scope pointing at a uniform area (sky - blue or cloudy, white wall). Adapt the duration so that you get a rather gray image (not full black or white).
  
  Syntax
  -----------
@@ -43,33 +43,70 @@ Ma(e)stroStack: a Matlab class to automatically align and stack astro-photograph
    Then press the Return key on the main interface. A **Drop Files Here** button appears in the lower left side. Drag and drop your Dark, Flat and Light images there. Images having 'dark' or 'flat' in their path/file name are marked as such automatically. You may alternatively use the File menu items.
    
    Supported image formats include JPG, PNG, TIFF, FITS. 
-   If you have installed **readraw**, you may as well directly import RAW camera images. This is highly recommended, as it retains much more information from the camera shot than the generated JPEG images, which prooves to be essential for subtracting the Dark image (background), and revealing faint objects.
+   If you have installed **readraw**, you may as well directly import RAW camera images. This is highly recommended, as it retains much more information from the camera than the generated JPEG images, which proves to be essential for subtracting the Dark image (background), and revealing faint objects.
+   
+   Alternatively, you may use DCRAW on each RAW image with command
+  
+  ```
+  dcraw -T -4 -t 0 <file.RAW>
+  ```
+   
+   To do things quickly, you can just select the Compute/Stack menu item. This will set the Reference frame, compute the master Dark and Flat frames, align and stack images. Then go to the Stacking section below (you may skip the next section).
    
  Preparing the Stacking
  ----------------------
     
-   After importing the files, you should label them using the 'Image/Mark as...' menu items. You can navigate within images with the Image/Goto menu item, and the arrow keys, or the mouse wheel. 'Bad' images can be skipped (ignored). To use them back, set their type to 'light'. You should then compute the master Dark and Flat images (Compute menu).
- 
-   It is recommended to zoom onto specific features (e.g. a set of stars) to check visually for their sharpness. Deselect the Zoom tool, and scan through images using the left arrow key, and press the 'I' key to mark images to be ignored, such as those blurred. To reset the plot, press the Return key.
-   
-   You can select the Reference image, which will be used as template for stacking.
-   If not defined, the first image in the list will be used as such when stacking.
-   
-   Optionally, use the Compute/Align item to compute the images control points (stars) which also corrects for background and scope response when dark and flat are defined. This procedure computes a metric to quantify the sharpness. You may then select the 'Compute/Show sharpness' menu item which metric is highest for clearer images, and low for blurred/moved ones. The axis is the image index. To automatically select best images, use the menu item 'Compute/Select on sharpness' and set a threshold. All images above will be selected, and those below will be marked as 'skip'. This automatic procedure is not optimal, and a manual check, as above, should be preferred.
+  The following steps are all optional.
+
+  After importing the files, you should label them using the 'Image/Mark as...' menu items. You can navigate within images with the Image/Goto menu item, and the arrow keys, or the mouse wheel. 'Bad' images can be skipped (ignored). To use them back, set their type to 'light'. You should then compute the master Dark and Flat images (Compute menu).
+
+  It is recommended to zoom onto specific features (e.g. a set of stars) to check visually for their sharpness. Deselect the Zoom tool, and scan through images using the left arrow key, and press the 'I' key to mark images to be ignored, such as those blurred. To reset the plot, press the Return key.
+
+  You can select the Reference image, which will be used as template for stacking. If not defined, the first image in the list will be used as such when stacking.
+
+  Optionally, use the Compute/Align item to compute the images control points (stars) which also corrects for background and scope response when dark and flat are defined. This procedure computes a metric to quantify the sharpness. 
    
  Stacking
  --------
  
    When ready, use the Compute/Stack menu item. If the Alignment has not been executed previously, it is achieved for each image. The final image is then shown and written to disk. Use e.g. Lightroom, RawTherapee, DarkTable to enhance contrast.
    
+ Improving the sharpness and contrast
+ ------------------------------------
+
+After the first Align or Stack procedure, the sharpness has been computed for all images. It is then possible to plot it in order to identify images of lower quality.
+
+You may then select the 'Compute/Select on sharpness' menu item which metric is highest for clearer images, and low for blurred/moved ones. The axis is the image index.
+
+You can use the following actions on that plot window. The mouse buttons define a rectangle selection.
+
+- **LEFT**       button   selected images are set to SKIP/IGNORE
+- **RIGHT**      button   selected images are set to LIGHT
+- **SHIFT-LEFT** button   open first image in selection
+- **LEFT/UP**    arrow    go to previous image
+- **DOWN/RIGHT** arrow    go to next image
+- **G**          key      goto image (selection from dialogue)
+- **I/S**        key      current image is set to IGNORE/SKIP
+- **L**          key      current image is set to LIGHT
+- *X/Q/ESC**    key      abort 
+
+You may as well check visually for the best images either from the main window (e.g. left/right arrows and press I key when the image is bad), or from the sharpness plot window with the same keys. It is recommended to zoom onto a portion of the image, to follow a few stars in shape. Then marl all blurred/strange star spots as Ignore/Skip.
+   
  Notes
  -----
  
    If you have difficulties in stacking (some images do not have enough control points), relax e.g. the translation tolerance, using the menu item 'Compute/Set tolerances'. You can also increase the number of control points.
+   
    In case the main interface is closed, get it back with 
    
   ```matlab
     plot(ma)
+  ```
+  
+  To save your session, with image references, labels, dark, flat, ignored images, and any stacked result, use:
+  
+  ```matlab
+  save my_session
   ```
  
  Using commands (scripting)
@@ -104,7 +141,6 @@ Ma(e)stroStack: a Matlab class to automatically align and stack astro-photograph
   - **mastrostack**     create the Ma(e)strostack session
   - **plot**            plot the user interface and images
   - **stack**           STACK light images, correcting with dark and flat.
-  - **save**            save the session
   
  Installation:
  -------------
@@ -118,7 +154,7 @@ Ma(e)stroStack: a Matlab class to automatically align and stack astro-photograph
   ```
   
   If you also have **readraw** installed and available, you will be able to import
-  RAW camera images.
+  RAW camera images. 
   
  Credits
  -------
