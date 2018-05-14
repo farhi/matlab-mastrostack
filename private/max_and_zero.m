@@ -1,44 +1,38 @@
-function [x1,y1, m1, im1, sx, sy, iter, sharpness] = max_and_zero(im1, dx, dy, iter)
+function [s,f,m, im, iter, sharpness] = max_and_zero(im, dx, iter)
   % max_and_zero: search for a maximum intensity point and zero image around it
   %
   % input:
-  %   im1: image (gray m*n)
-  %   dx,dy: area to zero after search
+  %   im: image (gray m*n)
+  %   dx:  area to zero after search
   % output:
   %   x1,y1: location in image
   %   m1:    intensity
   
-  if nargin <2, dx=0.3; end
-  if nargin <3, dy=0.3; end
-  if nargin <4, iter=1; end
-  if isscalar(dx) && dx<1
-    dx = round(size(im1,1)*dx);
-  end
-  if isscalar(dy) && dy<1
-    dy = round(size(im1,2)*dy);
-  end
+  if nargin <3, iter=1; end
+  if ndims(im) == 3, im = rgb2gray(im); end
   sharpness = 0;
-  if ndims(im1) == 3, im1 = rgb2gray(im1); end
-  
-  % search for max intensity
-  [m1,x1]=max(im1(:)); m1 = double(m1);
-  [x1,y1]=ind2sub(size(im1),x1);
-  [sx,sy, f1, f2] = peakwidth(im1, x1,y1);
-  % blank image around max
-  dx1 = round((x1-dx):(x1+dx));
-  dy1 = round((y1-dy):(y1+dy));
-  dx1=dx1(dx1>=1 & dx1 <=size(im1,1));
-  dy1=dy1(dy1>=1 & dy1 <=size(im1,2));
-  sharpness    = image_sharpness(im1(dx1,dy1));
-  im1(dx1,dy1) = 0;
   
   if iter>5, return; end
   
+  % search for max intensity and width
+  [s, f, m]  = peakwidth(im, [ ], dx);
+  
+  % get image around peak, and compute sharpness
+  dx1 = round((f(1)-dx):(f(1)+dx));
+  dy1 = round((f(2)-dx):(f(2)+dx));
+  dx1=dx1(dx1>=1 & dx1 <=size(im,1));
+  dy1=dy1(dy1>=1 & dy1 <=size(im,2));
+  % blank image around max
+  if prod(s) > 4
+    sharpness   = image_sharpness(im(dx1,dy1));
+  end
+  im(dx1,dy1) = 0;
+  
   % recursive call if that guess is not acceptable
   % remove dead pixels (too sharp peaks) and image edges.
-  if sx*sy < 4 || x1<5 || x1>size(im1,1)-4 || y1<5 || y1>size(im1,2)-4
-    [x1,y1, m1, im1, sx, sy, iter, sharpness] = max_and_zero(im1, dx, dy, iter+1);
+  if prod(s) < 4
+    [s,f,m, im, iter, sharpness] = max_and_zero(im, dx, iter+1);
     return
   end
-  
+
 end % max_and_zero

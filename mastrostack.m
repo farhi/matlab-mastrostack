@@ -526,6 +526,9 @@ classdef mastrostack < handle
       t = [ self.images(self.currentImage).id ...
         ' ' self.images(self.currentImage).type ...
         ' sharp=' num2str(self.images(self.currentImage).sharpness) ];
+      if self.images(self.currentImage).width > 0
+        t = [ t ' width=' num2str(self.images(self.currentImage).width) ];
+      end
       if strcmp(self.images(self.currentImage).type, 'light') && ...
         ((~isempty(self.flat) && ~isscalar(self.flat)) || ...
          (~isempty(self.dark) && ~isscalar(self.dark)))
@@ -888,38 +891,26 @@ function ButtonDownCallback(src, evnt, self)
   if strcmp(get(self.figure, 'SelectionType'),'normal') % left click adds a control point
     
     xy = get(gca, 'CurrentPoint'); 
-    y = xy(1,1); x = xy(1,2);
+    y  = xy(1,1); x = xy(1,2);
 
     % get the image data
     im = findall(gca, 'Type','image');
     im = get(im, 'CData'); im = rgb2gray(im);
-    dx = self.toleranceTranslation*size(im,1)*2;
-    dy = self.toleranceTranslation*size(im,2)*2;
+    dx = max(self.toleranceTranslation*size(im));
 
-    % extract local image
-    dx1 = round((x-dx):(x+dx));
-    dy1 = round((y-dy):(y+dy));
-    try
-      im1 = im(dx1, dy1); clear im
-    catch
-      return
-    end
-
-    % get closest max
-    [m0,x0]=max(im1(:));
-    [x,y]=ind2sub(size(im1),x0);
-    [sx,sy, fx, fy] = peakwidth(im1, x,y);  % refine around max
-    x=x+min(dx1); y=y+min(dy1);
-    self.images(self.currentImage).points.x(end+1) = x;
-    self.images(self.currentImage).points.y(end+1) = y;
-    self.images(self.currentImage).points.m(end+1) = m0;
-    self.images(self.currentImage).points.sx(end+1) = sx;
-    self.images(self.currentImage).points.sy(end+1) = sy;
+    % get closest max in sub-image
+    [s, f, m] = peakwidth(im, [x y], dx);  % refine around max
+    if numel(f) < 2, return; end
+    self.images(self.currentImage).points.x(end+1)  = f(1);
+    self.images(self.currentImage).points.y(end+1)  = f(2);
+    self.images(self.currentImage).points.m(end+1)  = m;
+    self.images(self.currentImage).points.sx(end+1) = s(1);
+    self.images(self.currentImage).points.sy(end+1) = s(2);
   elseif strcmp(get(self.figure, 'SelectionType'),'alt') % right -> remove last
     if numel(self.images(self.currentImage).points.x)
-      self.images(self.currentImage).points.x(end) = [];
-      self.images(self.currentImage).points.y(end) = [];
-      self.images(self.currentImage).points.m(end) = [];
+      self.images(self.currentImage).points.x(end)  = [];
+      self.images(self.currentImage).points.y(end)  = [];
+      self.images(self.currentImage).points.m(end)  = [];
       self.images(self.currentImage).points.sx(end) = [];
       self.images(self.currentImage).points.sy(end) = [];
     end
@@ -1106,7 +1097,7 @@ function MenuCallback(src, evnt, self)
     end
     plot(self, self.currentImage);
     axis tight
-  case 'Goto image...'
+  case {'G','Goto image...'}
     selection = listdlg(self, 'select image to go to','single');
     if isempty(selection), return; end
     plot(self, selection);

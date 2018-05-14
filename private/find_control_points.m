@@ -20,13 +20,16 @@ function points = find_control_points(im, N)
   % find 'max' intensity locations. Every time we have a spot, we 'blank' it
   % around so that other ones are separated by 'tol_trans*10'
   for p=1:N
-    [x1, y1, m1, im, sx, sy, iter, sharpness] = max_and_zero(im, dx/2, dx/2);
-    if ~x1 || ~y1, continue; end % can not find a new star
-    points.x(end+1) = x1;
-    points.y(end+1) = y1;
-    points.m(end+1) = m1;
-    points.sx(end+1)= sy;
-    points.sy(end+1)= sx;
+    [s,f,m, im, iter, sharpness] = max_and_zero(im, dx/2);
+    if isempty(f) || any(f == 0), continue; end % can not find a new star
+    if numel(f) == 2 && numel(points.x) && points.x(end) == f(1) && points.y(end) == f(2)
+      continue;
+    end
+    points.x(end+1) = f(1);
+    points.y(end+1) = f(2);
+    points.m(end+1) = m;
+    points.sx(end+1)= s(1);
+    points.sy(end+1)= s(2);
     points.sharpness(end+1) = sharpness;
   end
 
