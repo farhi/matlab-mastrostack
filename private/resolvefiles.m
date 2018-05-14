@@ -34,8 +34,7 @@ function a = resolvefiles(a, t)
       f{end+1} = [ sprintf('*.%s;', this.ext{:}) sprintf('*.%s;', F{:}) ];
       f{end+1} = this.description;
     end
-    
-    f = reshape(f, [ 2 index+4])';
+    f = reshape(f, [ 2 numel(f)/2])';
    
     % get the files
     [a, pathname] = uigetfile( ...

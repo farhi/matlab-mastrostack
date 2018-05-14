@@ -235,10 +235,12 @@ classdef mastrostack < handle
           this_img.index = found(index);
         end
         % store
-        if isempty(self.images)
+        if isempty(self.images) && this_img.index > 0
           self.images    = this_img;
-        else 
+        elseif this_img.index > 0
           self.images(this_img.index) = this_img; 
+        else
+          return
         end
 
         % add to return arguments
@@ -521,7 +523,7 @@ classdef mastrostack < handle
       else
         [~, img] = imread(self, img, 0);
       end
-      if isempty(img), return; end
+      if isempty(img) || isempty(im), return; end
       self.currentImage = img.index;
       t = [ self.images(self.currentImage).id ...
         ' ' self.images(self.currentImage).type ...
@@ -943,6 +945,15 @@ end % ScrollWheelCallback
 function MenuCallback(src, evnt, self)
   % MenuCallback: the main callback for menu and keyboard actions
   if nargin < 3, self=[]; end
+  if isobject(evnt)
+    publicProperties = fieldnames(evnt);
+    myStruct = struct();
+    for iField = 1:numel(publicProperties)
+        myStruct.(publicProperties{iField}) = evnt.(publicProperties{iField}); 
+    end
+    evnt = myStruct;
+  end
+  
   
   if ~isempty(self) && isempty(self.dndcontrol)
     % initialize Java hooks and activate Drag-n-Drop from external source (files, text)
@@ -958,17 +969,17 @@ function MenuCallback(src, evnt, self)
     self.dndcontrol = target;
   end
 
-  if ishandle(src) && isempty(evnt) % menu callback
-    if strcmp(get(src,'type'), 'figure')
+  if isfield(evnt, 'Key')
+    action = upper(evnt.Key);
+  elseif ishandle(src) % menu callbacksrc
+    if strcmp(get(src,'Type'), 'figure')    % clicked Figure Close button
       action = 'Close';
-    elseif strcmp(get(src,'type'), 'uicontrol')
+    elseif strcmp(get(src,'Type'), 'uicontrol') % clicked Drop button
       self.load('');
       return
-    elseif strcmp(get(src,'type'), 'uimenu')
+    elseif strcmp(get(src,'Type'), 'uimenu')    % a menu item
       action = get(src,'Label');
     end
-  elseif isfield(evnt, 'Key')
-    action = upper(evnt.Key);
   elseif isfield(evnt, 'DropType')  % drag-n-drop from dndcontrol
     self = get(gcf, 'UserData');
     switch evnt.DropType
