@@ -12,7 +12,7 @@ function [s,f,m, im, iter, sharpness] = max_and_zero(im, dx, iter)
   if ndims(im) == 3, im = rgb2gray(im); end
   sharpness = 0;
   
-  if iter>5, return; end
+  if iter>5, s=[]; f=[]; m=[]; return; end
   
   % search for max intensity and width
   [s, f, m]  = peakwidth(im, [ ], dx);
@@ -30,7 +30,7 @@ function [s,f,m, im, iter, sharpness] = max_and_zero(im, dx, iter)
   
   % recursive call if that guess is not acceptable
   % remove dead pixels (too sharp peaks) and image edges.
-  if prod(s) < 4
+  if prod(s) <= 9
     [s,f,m, im, iter, sharpness] = max_and_zero(im, dx, iter+1);
     return
   end
