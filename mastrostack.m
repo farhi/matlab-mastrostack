@@ -526,10 +526,15 @@ classdef mastrostack < handle
       if isempty(img) || isempty(im), return; end
       self.currentImage = img.index;
       t = [ self.images(self.currentImage).id ...
-        ' ' self.images(self.currentImage).type ...
-        ' sharp=' num2str(self.images(self.currentImage).sharpness) ];
+        ' ' self.images(self.currentImage).type ];
+      if self.images(self.currentImage).sharpness > 0
+        t = [ t ' sharp=' num2str(self.images(self.currentImage).sharpness) ];
+      end
       if self.images(self.currentImage).width > 0
         t = [ t ' width=' num2str(self.images(self.currentImage).width) ];
+      end
+      if self.images(self.currentImage).intensity > 0
+        t = [ t ' int=' num2str(self.images(self.currentImage).intensity) ];
       end
       if strcmp(self.images(self.currentImage).type, 'light') && ...
         ((~isempty(self.flat) && ~isscalar(self.flat)) || ...
@@ -1352,6 +1357,7 @@ function select_on_sharpness(self)
           figure(fig);
         end
       elseif key == 27 || key == double('x') || key == double('q') % ESC/quit
+        close(fig)
         return
       end
     end

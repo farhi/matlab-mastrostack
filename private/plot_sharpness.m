@@ -45,7 +45,7 @@ function [h, x_light, y_light, x_skip, y_skip]=plot_sharpness(images, current)
   hold off
   xlabel('Image index')
   ylabel('Sharpness (higher is better)');
-  title('Sharpness: {\color{blue}Left-clik}:SKIP {\color{blue}right-click}:LIGHT {\color{blue}shift-click} OPEN');
+  title('Sharpness: {\color{blue}Left-clik}:SKIP {\color{blue}right-click}:LIGHT {\color{blue}shift-click}:OPEN {\color{red}:EXIT');
   h = [ h1, h2, h3, h4, h5 ];
   legend(h, leg);
   xlim([ 0 numel(images)+1 ])
