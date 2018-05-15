@@ -34,11 +34,10 @@ function [s,f,m] = peakwidth(im, x0, dx)
   % restrict to usable range
   X  = X(X>=1 & X<=size(im1,1));
   Y  = Y(Y>=1 & Y<=size(im1,2));
-  im2= im1(X,Y);
   
   % determine centroid and width (gaussian)
-  [s1, f1] = width1(X, sum(im2, 2));
-  [s2, f2] = width1(Y, sum(im2, 1));
+  [s1, f1] = width1(X, im1(X,     x0(2)));
+  [s2, f2] = width1(Y, im1(x0(1), Y));
 
   f = [ f1 f2 ];
   if im1(x0(1), x0(2))*.8 > im1(round(f(1)), round(f(2))), f = x0; end
