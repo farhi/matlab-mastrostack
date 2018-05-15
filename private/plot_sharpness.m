@@ -1,7 +1,7 @@
 function [h, x_light, y_light, x_skip, y_skip]=plot_sharpness(images, current)
   
   if nargin < 2, current = 0; end
-  y = [ images.sharpness ]; % ./[ images.width ];
+  y = [ images.sharpness ] .* [ images.intensity ];
   y(~isfinite(y)) = nan;
   % we create data sets for Dark, Light, Flat and Skipped images
   x_dark=[]; x_light=[]; x_flat=[]; x_skip=[];

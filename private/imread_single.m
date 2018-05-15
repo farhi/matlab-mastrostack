@@ -90,6 +90,7 @@ function [im, img, exif] = imread_single(source, images, flag)
     img.image_size  = 0;
     img.image_sum   = 0;
     img.sharpness   = 0;
+    img.intensity   = 0;
     img.type        = [];
     img.points      = struct('x',[],'y',[],'handle',[],'m',[], ...
       'sx',[],'sy',[], 'sharpness', []);

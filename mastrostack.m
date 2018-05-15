@@ -861,6 +861,9 @@ classdef mastrostack < handle
           this_img.sharpness  = ...
               sqrt(sum(this_img.points.sharpness.^2)) ...
               /numel(this_img.points.sharpness);
+          this_img.intensity  = ...
+              sum(this_img.points.m) ...
+              /numel(this_img.points.m);
         end
         
         if isempty(nimg), nimg = this_img;
@@ -1298,8 +1301,6 @@ function select_on_sharpness(self)
   fig=figure('Name', [ mfilename ': Sharpness' ]); 
   if isempty(self.images), close(fig); return; end
   
-  
-  
   [h, x, y, xs, ys] = plot_sharpness(self.images, self.currentImage);
   
   t = { [ 'mastrostack: Sharpness selection' ], ...
@@ -1390,6 +1391,7 @@ function select_on_sharpness(self)
         break
       end
     end
+    figure(fig);
     cla;
     [h, x, y, xs, ys] = plot_sharpness(self.images, self.currentImage);
     

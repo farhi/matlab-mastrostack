@@ -41,7 +41,7 @@ function [s,f,m] = peakwidth(im, x0, dx)
   [s2, f2] = width1(Y, sum(im2, 1));
 
   f = [ f1 f2 ];
-  if im1(x0(1), x0(2)) > im1(round(f(1)), round(f(2))), f = x0; end
+  if im1(x0(1), x0(2))*.8 > im1(round(f(1)), round(f(2))), f = x0; end
   s = [ s1 s2 ];
   
 end % peakwidth
