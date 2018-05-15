@@ -40,10 +40,11 @@ Ma(e)stroStack: a Matlab class to automatically align and stack astro-photograph
     ma=mastrostack;
   ```
    
-   Then press the Return key on the main interface. A **Drop Files Here** button appears in the lower left side. Drag and drop your Dark, Flat and Light images there. Images having 'dark' or 'flat' in their path/file name are marked as such automatically. You may alternatively use the File menu items.
+   Then press the **Return** key on the main interface. A **Drop Files Here** button appears in the lower left side. Drag and drop your Dark, Flat and Light images there. Images having 'dark' or 'flat' in their path/file name are marked as such automatically. You may alternatively use the File menu items.
    
    Supported image formats include JPG, PNG, TIFF, FITS. 
-   If you have installed **readraw**, you may as well directly import RAW camera images. This is highly recommended, as it retains much more information from the camera than the generated JPEG images, which proves to be essential for subtracting the Dark image (background), and revealing faint objects.
+   
+   If you have installed **readraw** (see Credits section below), you may as well directly import RAW camera images. This is highly recommended, as it retains much more information from the camera than the generated JPEG images, which proves to be essential for subtracting the Dark image (background), and revealing faint objects.
    
    Alternatively, you may use DCRAW on each RAW image with command
   
@@ -60,7 +61,7 @@ Ma(e)stroStack: a Matlab class to automatically align and stack astro-photograph
 
   After importing the files, you should label them using the 'Image/Mark as...' menu items. You can navigate within images with the Image/Goto menu item, and the arrow keys, or the mouse wheel. 'Bad' images can be skipped (ignored). To use them back, set their type to 'light'. You should then compute the master Dark and Flat images (Compute menu).
 
-  It is recommended to zoom onto specific features (e.g. a set of stars) to check visually for their sharpness. Deselect the Zoom tool, and scan through images using the left arrow key, and press the 'I' key to mark images to be ignored, such as those blurred. To reset the plot, press the Return key.
+  It is recommended to zoom onto specific features (e.g. a set of stars) to check visually for their sharpness. De-select the Zoom tool, and scan through images using the left arrow key, and press the 'I' key to mark images to be ignored, such as those blurred. To reset the plot, press the Return key.
 
   You can select the Reference image, which will be used as template for stacking. If not defined, the first image in the list will be used as such when stacking.
 
@@ -90,7 +91,7 @@ You can use the following actions on that plot window. The mouse buttons define 
 - **L**          key      current image is set to LIGHT
 - *X/Q/ESC**    key      abort 
 
-You may as well check visually for the best images either from the main window (e.g. left/right arrows and press I key when the image is bad), or from the sharpness plot window with the same keys. It is recommended to zoom onto a portion of the image, to follow a few stars in shape. Then marl all blurred/strange star spots as Ignore/Skip.
+You may as well check visually for the best images either from the main window (e.g. left/right arrows and press I key when the image is bad), or from the sharpness plot window with the same keys. It is recommended to zoom onto a portion of the image, to follow a few stars in shape. Then mark all blurred/strange star spots as Ignore/Skip.
    
  Notes
  -----
@@ -125,8 +126,8 @@ You may as well check visually for the best images either from the main window (
  Methods
  -------
  
-  - **about**           display a dialg box
-  - **correct**         correct and image for dark (background) and flat (vigneting)
+  - **about**           display a dialogue box
+  - **correct**         correct and image for dark (background) and flat (vignetting)
   - **cpselect**        ALIGN images on reference
   - **diff**            compute difference of an image with reference
   - **delete**          delete the mastrostack, and clear memory
@@ -153,7 +154,7 @@ You may as well check visually for the best images either from the main window (
   addpath(pwd)
   ```
   
-  If you also have **readraw** installed and available, you will be able to import
+  If you also have **readraw** installed and available (see below), you will be able to import
   RAW camera images. 
   
  Credits
