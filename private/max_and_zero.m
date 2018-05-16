@@ -30,7 +30,7 @@ function [s,f,m, im, iter, sharpness] = max_and_zero(im, dx, iter)
   
   % recursive call if that guess is not acceptable
   % remove dead pixels (too sharp peaks) and image edges.
-  if prod(s) <= 9
+  if prod(s) <= 6
     [s,f,m, im, iter, sharpness] = max_and_zero(im, dx, iter+1);
     return
   end
