@@ -89,14 +89,14 @@ You can use the following actions on that plot window. The mouse buttons define 
 - **G**          key      goto image (selection from dialogue)
 - **I/S**        key      current image is set to IGNORE/SKIP
 - **L**          key      current image is set to LIGHT
-- *X/Q/ESC**    key      abort 
+- **X/Q/ESC**    key      abort 
 
 You may as well check visually for the best images either from the main window (e.g. left/right arrows and press I key when the image is bad), or from the sharpness plot window with the same keys. It is recommended to zoom onto a portion of the image, to follow a few stars in shape. Then mark all blurred/strange star spots as Ignore/Skip.
    
  Notes
  -----
  
-   If you have difficulties in stacking (some images do not have enough control points), relax e.g. the translation tolerance, using the menu item 'Compute/Set tolerances'. You can also increase the number of control points.
+   If you have difficulties in stacking (some images do not have enough control points), relax e.g. the translation tolerance, using the menu item 'Compute/Set tolerances'. A typical value is 0.01 (1%), but higher values may help (e.g. 0.02). You can also increase the number of control points, and define the typical area of dead/hot pixels: control points/stars with lower extent area (usually 5-9) will be ignored for the definition of control points. A value of 0 will not handle dead pixels. These options usually require to restart the 'Align' procedure before Stacking.
    
    In case the main interface is closed, get it back with 
    
@@ -109,6 +109,14 @@ You may as well check visually for the best images either from the main window (
   ```matlab
   save my_session
   ```
+  
+  which you can load back and display with:
+  
+  ```matlab
+  load my_session
+  plot(ma);
+  ```
+  
  
  Using commands (scripting)
  --------------------------

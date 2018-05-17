@@ -1361,6 +1361,11 @@ function select_on_sharpness(self)
         return
       end
     end
+    
+    z = zoom;
+    if strcmp(get(z,'Enable'),'on'), continue; end
+    z = pan;
+    if strcmp(get(z,'Enable'),'on'), continue; end
 
     switch but
     case 'alt'              % ctrl-click or right button
