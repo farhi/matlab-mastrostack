@@ -131,6 +131,7 @@ classdef mastrostack < handle
   properties
     toleranceTranslation  = 0.01; % in percent
     toleranceRotation     = 1;    % in deg
+    deadPixelArea         = 9;
     reference             = 0;    % by default the first 'light' image
     figure                = [];
     images = [];
@@ -859,7 +860,7 @@ classdef mastrostack < handle
           end
           
           this_img.points = ...
-              find_control_points(im, self.nbControlPoints);
+              find_control_points(im, self.nbControlPoints, self.deadPixelArea);
           this_img.width  = ...
               sqrt(sum(this_img.points.sx.^2.*this_img.points.sy.^2)) ...
               /numel(this_img.points.sx);
@@ -1146,13 +1147,16 @@ function MenuCallback(src, evnt, self)
     self.dndcontrol = [];
     delete(gcf);
   case 'Set tolerances'
-    prompt={'\bf {\color{blue}Translation} (0-1, e.g 0.01):','\bf {\color{blue}Rotation} [deg, e.g. 3]:', ...
-      '\bf {\color{blue}Nb of Control Points} [e.g. 30]:'};
-    name=[ mfilename ': Tolerances' ];
+    prompt={'\bf {\color{blue}tolerance on Translation} (in % of image size, 0-1, e.g 0.01):', ...
+      '\bf {\color{blue}tolerance on Rotation} [in deg, e.g. 1]:', ...
+      '\bf {\color{blue}Nb of Control Points} [e.g. 30-50]:', ...
+      '\bf {\color{blue}Dead Pixel Area} [in pixel^2 e.g. 6-9, 0 not to ignore dead pixels]:' };
+    name=[ mfilename ': Settings' ];
     numlines=1;
     defaultanswer={ num2str(self.toleranceTranslation), ...
                     num2str(self.toleranceRotation), ...
-                    num2str(self.nbControlPoints) };
+                    num2str(self.nbControlPoints), ...
+                    num2str(self.deadPixelArea) };
     options.Resize='on';
     options.WindowStyle='normal';
     options.Interpreter='tex';
@@ -1163,6 +1167,12 @@ function MenuCallback(src, evnt, self)
     end
     if isfinite(str2double(answer{2}))
       self.toleranceRotation = str2double(answer{2});
+    end
+    if isfinite(str2double(answer{3}))
+      self.nbControlPoints = ceil(str2double(answer{3}));
+    end
+    if isfinite(str2double(answer{4}))
+      self.deadPixelArea = str2double(answer{4});
     end
   case 'Select images on sharpness...'
     select_on_sharpness(self);

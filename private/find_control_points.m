@@ -1,4 +1,4 @@
-function points = find_control_points(im, N)
+function points = find_control_points(im, N, deadPixelArea)
   % find_control_points: find N points separated with tol_trans*10 pixels
   if nargin < 2, N=30; end
   if ndims(im) == 3, im = rgb2gray(im); end
@@ -20,7 +20,7 @@ function points = find_control_points(im, N)
   % find 'max' intensity locations. Every time we have a spot, we 'blank' it
   % around so that other ones are separated by 'tol_trans*10'
   for p=1:N
-    [s,f,m, im, iter, sharpness] = max_and_zero(im, dx/2);
+    [s,f,m, im, iter, sharpness] = max_and_zero(im, dx/2, deadPixelArea);
     if isempty(f) || any(f == 0), continue; end % can not find a new star
     if numel(f) == 2 && numel(points.x) && points.x(end) == f(1) && points.y(end) == f(2)
       continue;
