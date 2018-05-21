@@ -23,6 +23,7 @@ function [s,f,m] = peakwidth(im, x0, dx)
     % extract sub-image around x0 within dx, then get the max location
     X=(x0(1)-dx):(x0(1)+dx); X=round(X(X>=1 & X<=size(im1,1)));
     Y=(x0(2)-dx):(x0(2)+dx); Y=round(Y(Y>=1 & Y<=size(im1,2)));
+    if isempty(X) || isempty(Y), return; end
     [x0,m] = peak_max(im1(X,Y),'proj');
     x0 = x0 + [ min(X) min(Y) ] -1;
   end
@@ -34,6 +35,7 @@ function [s,f,m] = peakwidth(im, x0, dx)
   % restrict to usable range
   X  = X(X>=1 & X<=size(im1,1));
   Y  = Y(Y>=1 & Y<=size(im1,2));
+  if isempty(X) || isempty(Y), return; end
   
   % determine centroid and width (gaussian)
   im2=double(im1(X,Y));
