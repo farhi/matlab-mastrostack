@@ -25,12 +25,12 @@ function [h, x_light, y_light, x_skip, y_skip]=plot_sharpness(images, current)
     end
   end
   % plot
-  h1=plot(x_light,y_light, 'bo');
+  h1=plot(x_light,y_light, 'bo'); set(h1, 'Tag','mastrostackSharp_light');
   hold on
-  % h2=plot(x_dark, y_dark,  'ks');
-  % h3=plot(x_flat, y_flat,  'mv');
+  h2=plot(x_dark, y_dark,  'ks');
+  h3=plot(x_flat, y_flat,  'mv');
   h2 = []; h3 = [];
-  h4=plot(x_skip, y_skip,  'rs');
+  h4=plot(x_skip, y_skip,  'rs'); set(h4, 'Tag','mastrostackSharp_skip');
   if current >=1 && current <= numel(images)
     h5=plot(current, y(current), 'c+'); set(h5, 'MarkerSize',10);
   else h5=[];
@@ -49,5 +49,5 @@ function [h, x_light, y_light, x_skip, y_skip]=plot_sharpness(images, current)
   title('Sharpness: {\color{blue}Left-clik}:SKIP {\color{blue}right-click}:LIGHT {\color{blue}shift-click}:OPEN {\color{red}ESC}:EXIT');
   h = [ h1, h2, h3, h4, h5 ];
   legend(h, leg);
-  xlim([ 0 numel(images)+1 ]); ylim('auto');
+  % xlim([ 0 numel(images)+1 ]); ylim('auto');
   

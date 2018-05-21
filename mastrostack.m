@@ -1234,7 +1234,7 @@ function fig = build_interface(self)
       'MenuBar','none', 'Toolbar','figure',...
       'CloseRequestFcn',      {@MenuCallback, self }, ...
       'WindowButtonDownFcn',  {@ButtonDownCallback, self}, ...
-      'KeyPressFcn',          {@KeyPressCallback, self }, ...
+      'KeyPressFcn',          {@MenuCallback, self }, ...
       'WindowScrollWheelFcn', {@ScrollWheelCallback,self});
     % add menu items and mouse/keyboard callbacks
     m = uimenu(fig, 'Label', 'File');
@@ -1307,86 +1307,73 @@ function fig = build_interface(self)
       
     m = uimenu(fig, 'Label', 'Help');
     uimenu(m, 'Label', 'Help',        ...
-      'Callback', {@MenuCallback, self });
+      'Callback', {@MenuCallback, self },'Accelerator','h');
     uimenu(m, 'Label', 'About',        ...
       'Callback', {@MenuCallback, self });
     
     % install mouse event handler on axis and figure
     set(gca, 'ButtonDownFcn', {@ButtonDownCallback, self }); % will get its CurrentPoint
-    set(fig, 'KeyPressFcn',   {@MenuCallback, self });       % will get its CurrentCharacter
-    set(fig, 'WindowScrollWheelFcn',   {@ScrollWheelCallback, self });
     set(fig, 'UserData',self);
 end % build_interface
 
+function fig = build_interfaceSharp(self)
+  % build_interfaceSharp: build the sharpness window menus
+  
+  fig = figure('Name','Ma(e)stroStack: Sharpness','Tag','mastrostackSharp', ...
+      'MenuBar','none', 'Toolbar','figure',...
+      'WindowButtonDownFcn',  {@ButtonDownCallbackSharp, self}, ...
+      'KeyPressFcn',          {@MenuCallbackSharp, self });
+  m = uimenu('Label', 'Image');
+  uimenu(m, 'Label', 'Mark as Light image',       ...
+    'Callback', {@MenuCallbackSharp, self },'Accelerator','l');
+  uimenu(m, 'Label', 'Mark as "skip"',        ...
+    'Callback', {@MenuCallbackSharp, self },'Accelerator','i');
+  
+  uimenu(m, 'Label', 'Goto image...', 'Separator','on',    ...
+    'Callback', {@MenuCallbackSharp, self });
+  uimenu(m, 'Label', 'Next image',       ...
+    'Callback', {@MenuCallbackSharp, self },'Accelerator','n');
+  uimenu(m, 'Label', 'Previous image',        ...
+    'Callback', {@MenuCallbackSharp, self },'Accelerator','p');
+  uimenu(m, 'Label','Help',       ...
+    'Callback', {@MenuCallbackSharp, self },'Accelerator','h');
+
+end % build_interfaceSharp
+
 function select_on_sharpness(self)
-
-  persistent first_use
-
-  fig=figure('Name', [ mfilename ': Sharpness' ]); 
-  if isempty(self.images), close(fig); return; end
+  % select_on_sharpness: display the sharpness window
+  if isempty(self.images), return; end
   
-  [h, x, y, xs, ys] = plot_sharpness(self.images, self.currentImage);
-  
-  t = { [ 'mastrostack: Sharpness selection' ], ...
-    'You may select a rectangle area with the mouse, using:', ...
-    '  LEFT       button   selected images are set to SKIP/IGNORE', ...
-    '  RIGHT      button   selected images are set to LIGHT', ...
-    '  SHIFT-LEFT button   open first image in selection', ...
-    '  LEFT/UP    arrow    go to previous image', ...
-    '  DOWN/RIGHT arrow    go to next image', ...
-    '  G          key      goto image (selection from dialogue)', ...
-    '  I/S        key      current image is set to IGNORE/SKIP', ...
-    '  L          key      current image is set to LIGHT', ...
-    '  X/Q/ESC    key      abort' };
-  
-  if isempty(first_use)
-    first_use = false;
-    fprintf(1, '%s\n', t{:});
-    % helpdlg(t, [ mfilename ': Sharpness selection Help' ]);
+  fig = findall(0, 'Tag', 'mastrostackSharp');
+  if isempty(fig) % build the figure
+    fig = build_interfaceSharp(self);
+  else
+    set(0, 'CurrentFigure',fig); % activate but no raise
   end
   
-  % loop until user press key
-  while true
-    try
-      k = waitforbuttonpress;
-    catch
-      return % no more active window
-    end
-    % determines what has been pressed
-    key = get(gcf, 'CurrentCharacter');
-    p1  = get(gca, 'CurrentPoint');
-    but = get(gcf, 'SelectionType'); % = 'normal': left or 'alt': right
-    
-    % key pressed: test if we exit the loop
-    if ~isempty(key) || k == 1
-      if key == 28 || key == 30 || key == double('p')     % left/up  arrow
-        plot(self, max(1, self.currentImage-1));
-        figure(fig);
-      elseif key == 29 || key == 31 || key == double('n') || key == 32 % right/down arrow
-        plot(self, min(numel(self.images), self.currentImage+1));
-        figure(fig);
-      elseif key == double('i') || key == double('s') % Ignore/Skip
-        self.images(self.currentImage).type = 'skip';
-      elseif key == double('l') % Light
-        self.images(self.currentImage).type = 'light';
-      elseif key == double('g') % Goto image
-        selection = listdlg(self, 'select image to go to','single');
-        if ~isempty(selection)
-          plot(self, selection);
-          figure(fig);
-        end
-      elseif key == 27 || key == double('x') || key == double('q') % ESC/quit
-        close(fig)
-        return
-      end
-    end
-    
-    z = zoom;
-    if strcmp(get(z,'Enable'),'on'), continue; end
-    z = pan;
-    if strcmp(get(z,'Enable'),'on'), continue; end
+  % plot current sharpness curve
+  figure(fig); 
+  [h, x, y, xs, ys] = plot_sharpness(self.images, self.currentImage);
+  xlim([ 0 numel(self.images)+1 ]); ylim auto
+  
+end % select_on_sharpness
 
-    switch but
+function ButtonDownCallbackSharp(src, evnt, self)
+  % ButtonDownCallbackSharp: the mouse action callback for sharpness window
+  
+  h   = findobj(gcbf, 'Tag','mastrostackSharp_light');
+  hs  = findobj(gcbf, 'Tag','mastrostackSharp_skip');
+  if isempty(h) && isempty(hs), return; end
+  
+  fig = gcbf;
+  
+  x   = get(h, 'XData'); y  = get(h,  'YData');
+  xs  = get(hs,'XData'); ys = get(hs, 'YData');
+  
+  but = get(gcbf, 'SelectionType'); % = 'normal': left or 'alt': right
+  p1  = get(gca,  'CurrentPoint');
+  
+  switch but
     case 'alt'              % ctrl-click or right button
       title('Setting images to Light')
       x = xs; y = ys;
@@ -1417,13 +1404,78 @@ function select_on_sharpness(self)
         self.images(index).type='light';
       else
         plot(self, index);
-        figure(fig);
-        break
       end
     end
-    figure(fig);
-    cla;
-    [h, x, y, xs, ys] = plot_sharpness(self.images, self.currentImage);
     
-  end % while
-end % select_on_sharpness
+    % replot
+    set(0, 'CurrentFigure',fig); % activate but no raise
+    [h, x, y, xs, ys] = plot_sharpness(self.images, self.currentImage);
+
+end % ButtonDownCallbackSharp
+
+function MenuCallbackSharp(src, evnt, self)
+
+  if isobject(evnt)
+    publicProperties = fieldnames(evnt);
+    myStruct = struct();
+    for iField = 1:numel(publicProperties)
+        myStruct.(publicProperties{iField}) = evnt.(publicProperties{iField}); 
+    end
+    evnt = myStruct;
+  end
+  
+  if isfield(evnt, 'Key')
+    action = upper(evnt.Key);
+  elseif ishandle(src) % menu callbacksrc
+    if strcmp(get(src,'Type'), 'figure')    % clicked Figure Close button
+      action = 'Close';
+    elseif strcmp(get(src,'Type'), 'uicontrol') % clicked Drop button
+      self.load('');
+      return
+    elseif strcmp(get(src,'Type'), 'uimenu')    % a menu item
+      action = get(src,'Label');
+    end
+  end
+  
+  % determines what has been pressed
+  key = get(gcbf, 'CurrentCharacter');
+  fig = gcbf;
+    
+  % key pressed: test if we exit the loop
+  switch(action)
+  case {'LEFTARROW','UPARROW','P','Previous image'}   % previous
+    plot(self, max(1, self.currentImage-1));
+  case {'RIGHTARROW','DOWNARROW','N','Next image',' ','SPACE'}  % next
+    plot(self, min(numel(self.images), self.currentImage+1));
+  case {'PAGEUP'}   % previous *10
+    plot(self, max(1, self.currentImage-10));
+  case {'PAGEDOWN'}  % next *10
+    plot(self, min(numel(self.images), self.currentImage+10));
+  case {'I','S'} % skip/ignore
+    self.images(self.currentImage).type = 'skip';
+  case {'L','Mark as Light image'} % Light
+    self.images(self.currentImage).type = 'light';
+  case {'G','Goto image...'}   % Goto image
+    selection = listdlg(self, 'select image to go to','single');
+    if ~isempty(selection)
+      plot(self, selection);
+    end
+  case {'H','Help'}
+    t = { [ 'mastrostack: Sharpness selection' ], ...
+    'You may select a rectangle area with the mouse, using:', ...
+    '  LEFT       button   selected images are set to SKIP/IGNORE', ...
+    '  RIGHT      button   selected images are set to LIGHT', ...
+    '  SHIFT-LEFT button   open first image in selection', ...
+    '  LEFT/UP    arrow    go to previous image', ...
+    '  DOWN/RIGHT arrow    go to next image', ...
+    '  G          key      goto image (selection from dialogue)', ...
+    '  I/S        key      current image is set to IGNORE/SKIP', ...
+    '  L          key      current image is set to LIGHT'};
+    helpdlg(t, [ mfilename ': Sharpness selection Help' ]);
+  end
+  
+  % replot sharpness data
+  set(0, 'CurrentFigure',fig); % activate but no raise
+  [h, x, y, xs, ys] = plot_sharpness(self.images, self.currentImage);
+
+end % MenuCallbackSharp
