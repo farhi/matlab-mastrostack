@@ -546,7 +546,9 @@ classdef mastrostack < handle
       t = [ t ' [' num2str(self.currentImage) '/' num2str(numel(self.images)) ']' ];
       
       im = im2uint(im,'uint8');
-      if strcmp(option, 'log')
+      logscale = findobj(self.figure, 'Tag', 'LogScale');
+      logscale = get(logscale, 'Checked');
+      if strcmp(option, 'log') || strcmp(logscale, 'on')
         im = imlogscale(im);
       end
       h = image(im);
@@ -1009,10 +1011,14 @@ function MenuCallback(src, evnt, self)
   end
 
   switch action
-  case {'LEFTARROW','PAGEUP','UPARROW','P','Previous image'}   % previous
+  case {'LEFTARROW','UPARROW','P','Previous image'}   % previous
     plot(self, max(1, self.currentImage-1));
-  case {'RIGHTARROW','PAGEDOWN','DOWNARROW','N','Next image',' ','SPACE'}  % next
+  case {'RIGHTARROW','DOWNARROW','N','Next image',' ','SPACE'}  % next
     plot(self, min(numel(self.images), self.currentImage+1));
+  case {'PAGEUP'}   % previous *10
+    plot(self, max(1, self.currentImage-10));
+  case {'PAGEDOWN'}  % next *10
+    plot(self, min(numel(self.images), self.currentImage+10));
   case {'L'}  % Light
     label(self, 'light', self.currentImage);
   case {'D'}  % Dark
@@ -1093,9 +1099,12 @@ function MenuCallback(src, evnt, self)
       self.images(this_img.index).type = 'flat';
     end
   case {'Show in log scale'}
+    status = get(src, 'Checked');
+    if strcmp(status,'on'), status = 'off'; else status = 'on'; end
+    set(src, 'Checked',status, 'Tag','LogScale');
     if ~isempty(self.currentImage) && ...
       numel(self.images) >= self.currentImage && self.currentImage > 0
-      plot(self, self.currentImage, 'log');
+        plot(self, self.currentImage);
     end
   case 'Compute master Dark'
     self.dark = [];
@@ -1265,7 +1274,7 @@ function fig = build_interface(self)
     uimenu(m, 'Label', 'Re-Plot',        ...
       'Callback', {@MenuCallback, self });
     uimenu(m, 'Label', 'Show in log scale',        ...
-      'Callback', {@MenuCallback, self });
+      'Callback', {@MenuCallback, self }, 'Tag', 'LogScale');
     uimenu(m, 'Label', 'Goto image...', 'Separator','on',    ...
       'Callback', {@MenuCallback, self });
     uimenu(m, 'Label', 'Next image',       ...

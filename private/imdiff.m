@@ -65,7 +65,12 @@ function [ret_t, ret_R, theta] = imdiff(self, img1, img2)
       % control points orig and axis
       theta1 = t1(p1_axis); % t1(p1_orig) == 0
       theta2 = t2(p2_axis);
-      theta = asind(ret_R(1,2));
+      theta = atan2(ret_R(2,1),ret_R(1,1))*180/pi;
+      if theta < -90 && theta2-theta1 > 90
+        theta = theta + 360;
+      elseif theta > 90 && theta2-theta1 < -90
+        theta = theta - 360;
+      end
       if abs(theta-(theta2-theta1)) > tol_rot
         disp([ mfilename ': WARNING: invalid affine rotation theta=' num2str([theta theta2-theta1]) '. Skipping.']);
         ret_t = [];
