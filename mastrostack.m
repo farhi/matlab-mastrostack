@@ -133,7 +133,7 @@ classdef mastrostack < handle
     toleranceRotation     = 1;    % in deg
     deadPixelArea         = 9;
     reference             = 0;    % by default the first 'light' image
-    figure                = [];
+    
     images = [];
     %      id
     %      source (or matrix if directly given)
@@ -155,8 +155,14 @@ classdef mastrostack < handle
     light   = 0;  % stored as a double in [0-1]
     lightN  = 0;  % stored as a uint16
     nbControlPoints = 50;
+    UserData    = [];
+  end
+  
+  properties (Access=private)
+    figure       = [];
     currentImage = 0;  % index of the current image on figure
-    dndcontrol = [];
+    dndcontrol   = [];
+    
   end % properties
   
   methods
