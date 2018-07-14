@@ -638,6 +638,11 @@ classdef mastrostack < handle
             continue; 
           end
           
+          if ~ishandle(wb)
+            disp('Stack: Aborting (user closed the waitbar).')
+            break;
+          end
+          
           % stack light images
           im = correct(self, imread(self, this_img)); % read and correct image
           if isempty(im), continue; end

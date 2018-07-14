@@ -74,9 +74,11 @@ function [im, img, exif] = imread_single(source, images, flag)
       exif.ColorType    = 'truecolor';
     end
   end
-  
+  if numel(exif) > 1, exif = exif(1); end
   if isfield(exif, 'DigitalCamera') && isfield(exif.DigitalCamera, 'ExposureTime')
     exif.ExposureTime = exif.DigitalCamera.ExposureTime;
+  elseif isfield(exif, 'Shutter')
+    exif.ExposureTime = str2num(strtok(exif.Shutter));
   end
   
   if ~isstruct(img)
