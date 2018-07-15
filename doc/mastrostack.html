@@ -34,6 +34,8 @@
       text-decoration-style: initial; text-decoration-color: initial;">Ma(e)stroStack:
 
 
+
+
       a Matlab class to automatically align and stack astro-photography
       images<br>
     </p>
@@ -78,6 +80,8 @@
       text-decoration-style: initial; text-decoration-color: initial;">This
 
 
+
+
       class gets a list of images, and automatically determines bright
       stars as control points. These are followed along pictures, and
       used to build an affine transformation at constant scale (e.g. a
@@ -97,6 +101,8 @@
       text-transform: none; white-space: normal; widows: 2;
       word-spacing: 0px; -webkit-text-stroke-width: 0px;
       text-decoration-style: initial; text-decoration-color: initial;">This
+
+
 
 
       function does not make use of the phase correlation technique, but
@@ -119,8 +125,12 @@
       text-decoration-style: initial; text-decoration-color: initial;">It
 
 
+
+
       is highly recommended to specify a<span>&nbsp;</span><strong
         style="box-sizing: border-box; font-weight: 600;">dark</strong><span>&nbsp;</span>frame
+
+
 
 
       filename, which will be subtracted to all images, in order to e.g.
@@ -140,8 +150,12 @@
       text-decoration-style: initial; text-decoration-color: initial;">You
 
 
+
+
       may as well specify a<span>&nbsp;</span><strong style="box-sizing:
         border-box; font-weight: 600;">flat</strong><span>&nbsp;</span>frame
+
+
 
 
       filename, which will be divided to all images, in order to counter
@@ -201,6 +215,8 @@
       text-decoration-style: initial; text-decoration-color: initial;">start
 
 
+
+
       the user interface</p>
     <p style="box-sizing: border-box; margin-top: 0px; margin-bottom:
       16px; color: rgb(36, 41, 46); font-family: -apple-system,
@@ -228,7 +244,10 @@
       text-decoration-style: initial; text-decoration-color: initial;">loads
 
 
-      images without setting their type</p>
+
+
+      images without setting their type and start the interface<br>
+    </p>
     <p style="box-sizing: border-box; margin-top: 0px; margin-bottom:
       16px; color: rgb(36, 41, 46); font-family: -apple-system,
       BlinkMacSystemFont, &quot;Segoe UI&quot;, Helvetica, Arial,
@@ -268,8 +287,10 @@
       text-decoration-style: initial; text-decoration-color: initial;">loads
 
 
-      light, dark (background) and flat (scope response) images, and
-      label them.</p>
+
+
+      light, dark (background) and flat (scope response) images, label
+      them, and start the interface</p>
     <h2 style="box-sizing: border-box; margin-top: 24px; margin-bottom:
       16px; font-size: 1.5em; font-weight: 600; line-height: 1.25;
       padding-bottom: 0.3em; border-bottom: 1px solid rgb(234, 236,
@@ -299,6 +320,8 @@
             13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Importing
 
 
+
+
       images</h2>
     <p style="box-sizing: border-box; margin-top: 0px; margin-bottom:
       16px; color: rgb(36, 41, 46); font-family: -apple-system,
@@ -311,6 +334,8 @@
       text-transform: none; white-space: normal; widows: 2;
       word-spacing: 0px; -webkit-text-stroke-width: 0px;
       text-decoration-style: initial; text-decoration-color: initial;">Start
+
+
 
 
       with:</p>
@@ -341,6 +366,8 @@
       text-decoration-style: initial; text-decoration-color: initial;">Then
 
 
+
+
       press the Return key on the main interface. A<span>&nbsp;</span><strong
         style="box-sizing: border-box; font-weight: 600;">Drop Files
         Here</strong><span>&nbsp;</span>button appears in the lower left
@@ -358,6 +385,8 @@
       text-transform: none; white-space: normal; widows: 2;
       word-spacing: 0px; -webkit-text-stroke-width: 0px;
       text-decoration-style: initial; text-decoration-color: initial;">Supported
+
+
 
 
       image formats include JPG, PNG, TIFF, FITS. If you have installed<span>&nbsp;</span><a
@@ -379,7 +408,35 @@
       normal; orphans: 2; text-align: start; text-indent: 0px;
       text-transform: none; white-space: normal; widows: 2;
       word-spacing: 0px; -webkit-text-stroke-width: 0px;
+      text-decoration-style: initial; text-decoration-color: initial;">You
+
+      may as well import images using the command:<br>
+    </p>
+    <pre>      ma.load('images');</pre>
+    <p style="box-sizing: border-box; margin-top: 0px; margin-bottom:
+      16px; color: rgb(36, 41, 46); font-family: -apple-system,
+      BlinkMacSystemFont, &quot;Segoe UI&quot;, Helvetica, Arial,
+      sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI
+      Emoji&quot;, &quot;Segoe UI Symbol&quot;; font-size: 16px;
+      font-style: normal; font-variant-ligatures: normal;
+      font-variant-caps: normal; font-weight: 400; letter-spacing:
+      normal; orphans: 2; text-align: start; text-indent: 0px;
+      text-transform: none; white-space: normal; widows: 2;
+      word-spacing: 0px; -webkit-text-stroke-width: 0px;
+      text-decoration-style: initial; text-decoration-color: initial;"></p>
+    <p style="box-sizing: border-box; margin-top: 0px; margin-bottom:
+      16px; color: rgb(36, 41, 46); font-family: -apple-system,
+      BlinkMacSystemFont, &quot;Segoe UI&quot;, Helvetica, Arial,
+      sans-serif, &quot;Apple Color Emoji&quot;, &quot;Segoe UI
+      Emoji&quot;, &quot;Segoe UI Symbol&quot;; font-size: 16px;
+      font-style: normal; font-variant-ligatures: normal;
+      font-variant-caps: normal; font-weight: 400; letter-spacing:
+      normal; orphans: 2; text-align: start; text-indent: 0px;
+      text-transform: none; white-space: normal; widows: 2;
+      word-spacing: 0px; -webkit-text-stroke-width: 0px;
       text-decoration-style: initial; text-decoration-color: initial;">Alternatively,
+
+
       you may use DCRAW on each RAW image with command<br>
     </p>
     <blockquote>
@@ -407,6 +464,8 @@
       text-transform: none; white-space: normal; widows: 2;
       word-spacing: 0px; -webkit-text-stroke-width: 0px;
       text-decoration-style: initial; text-decoration-color: initial;">To
+
+
       do things quickly, you can just select the Compute/Stack menu
       item. This will set the Reference frame, compute the master Dark
       and Flat frames, align and stack images. Then go to the Stacking
@@ -440,6 +499,8 @@ href="https://github.com/farhi/matlab-mastrostack#preparing-the-stacking"
             13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Preparing
 
 
+
+
       the Stacking</h2>
     <p style="box-sizing: border-box; margin-top: 0px; margin-bottom:
       16px; color: rgb(36, 41, 46); font-family: -apple-system,
@@ -452,6 +513,8 @@ href="https://github.com/farhi/matlab-mastrostack#preparing-the-stacking"
       text-transform: none; white-space: normal; widows: 2;
       word-spacing: 0px; -webkit-text-stroke-width: 0px;
       text-decoration-style: initial; text-decoration-color: initial;">The
+
+
       following steps are all optional. <br>
     </p>
     <p style="box-sizing: border-box; margin-top: 0px; margin-bottom:
@@ -465,6 +528,8 @@ href="https://github.com/farhi/matlab-mastrostack#preparing-the-stacking"
       text-transform: none; white-space: normal; widows: 2;
       word-spacing: 0px; -webkit-text-stroke-width: 0px;
       text-decoration-style: initial; text-decoration-color: initial;">After
+
+
 
 
       importing the files, you should label them using the 'Image/Mark
@@ -486,6 +551,8 @@ href="https://github.com/farhi/matlab-mastrostack#preparing-the-stacking"
       text-decoration-style: initial; text-decoration-color: initial;">It
 
 
+
+
       is recommended to zoom onto specific features (e.g. a set of
       stars) to check visually for their sharpness. Deselect the Zoom
       tool, and scan through images using the left arrow key, and press
@@ -504,6 +571,8 @@ href="https://github.com/farhi/matlab-mastrostack#preparing-the-stacking"
       text-decoration-style: initial; text-decoration-color: initial;">You
 
 
+
+
       can select the Reference image, which will be used as template for
       stacking. If not defined, the first image in the list will be used
       as such when stacking.<br>
@@ -519,6 +588,8 @@ href="https://github.com/farhi/matlab-mastrostack#preparing-the-stacking"
       text-transform: none; white-space: normal; widows: 2;
       word-spacing: 0px; -webkit-text-stroke-width: 0px;
       text-decoration-style: initial; text-decoration-color: initial;">Optionally,
+
+
 
 
       use the <i>Compute/Align</i> item to compute the images control
@@ -564,6 +635,8 @@ href="https://github.com/farhi/matlab-mastrostack#preparing-the-stacking"
       text-decoration-style: initial; text-decoration-color: initial;">When
 
 
+
+
       ready, use the Compute/Stack menu item. If the Alignment has not
       been executed previously, it is achieved for each image. The final
       image is then shown and written to disk. Use e.g. Lightroom,
@@ -581,6 +654,8 @@ href="https://github.com/farhi/matlab-mastrostack#preparing-the-stacking"
       text-transform: none; white-space: normal; widows: 2;
       word-spacing: 0px; -webkit-text-stroke-width: 0px;
       text-decoration-style: initial; text-decoration-color: initial;">After
+
+
       the first Align or Stack procedure, the sharpness has been
       computed for all images. It is then possible to plot it in order
       to identify images of lower quality.<br>
@@ -596,6 +671,8 @@ href="https://github.com/farhi/matlab-mastrostack#preparing-the-stacking"
       text-transform: none; white-space: normal; widows: 2;
       word-spacing: 0px; -webkit-text-stroke-width: 0px;
       text-decoration-style: initial; text-decoration-color: initial;">You
+
+
       may then select the 'Compute/Select on sharpness' menu item which
       metric is highest for clearer images, and low for blurred/moved
       ones. The axis is the image index. <br>
@@ -611,6 +688,8 @@ href="https://github.com/farhi/matlab-mastrostack#preparing-the-stacking"
       text-transform: none; white-space: normal; widows: 2;
       word-spacing: 0px; -webkit-text-stroke-width: 0px;
       text-decoration-style: initial; text-decoration-color: initial;">You
+
+
       can use the following actions on that plot window. The mouse
       buttons define a rectangle selection.</p>
     <ul>
@@ -687,6 +766,8 @@ href="https://github.com/farhi/matlab-mastrostack#preparing-the-stacking"
       text-decoration-style: initial; text-decoration-color: initial;">If
 
 
+
+
       you have difficulties in stacking (some images do not have enough
       control points), relax e.g. the translation tolerance, using the
       menu item 'Compute/Set tolerances'. You can also increase the
@@ -753,6 +834,8 @@ href="https://github.com/farhi/matlab-mastrostack#using-commands-scripting"
       text-decoration-style: initial; text-decoration-color: initial;">Using
 
 
+
+
       commands (scripting)</h2>
     <p style="box-sizing: border-box; margin-top: 0px; margin-bottom:
       16px; color: rgb(36, 41, 46); font-family: -apple-system,
@@ -765,6 +848,8 @@ href="https://github.com/farhi/matlab-mastrostack#using-commands-scripting"
       text-transform: none; white-space: normal; widows: 2;
       word-spacing: 0px; -webkit-text-stroke-width: 0px;
       text-decoration-style: initial; text-decoration-color: initial;">Using
+
+
 
 
       commands allow to script/automate the procedure.</p>
@@ -781,9 +866,7 @@ href="https://github.com/farhi/matlab-mastrostack#using-commands-scripting"
       0px; text-decoration-style: initial; text-decoration-color:
       initial;">
       <pre style="box-sizing: border-box; font-family: SFMono-Regular, Consolas, &quot;Liberation Mono&quot;, Menlo, Courier, monospace; font-size: 13.6px; margin-top: 0px; margin-bottom: 0px; word-wrap: normal; padding: 16px; overflow: auto; line-height: 1.45; background-color: rgb(246, 248, 250); border-radius: 3px; word-break: normal;">   <span class="pl-c" style="box-sizing: border-box; color: rgb(106, 115, 125);"><span class="pl-c" style="box-sizing: border-box; color: rgb(106, 115, 125);">%</span> create Ma(e)stroStack and import images</span>
-   ma=mastrostack(<span class="pl-s" style="box-sizing: border-box; color: rgb(3, 47, 98);"><span class="pl-pds" style="box-sizing: border-box; color: rgb(3, 47, 98);">'</span>path/to/images/*.JPG<span class="pl-pds" style="box-sizing: border-box; color: rgb(3, 47, 98);">'</span></span>,<span class="pl-s" style="box-sizing: border-box; color: rgb(3, 47, 98);"><span class="pl-pds" style="box-sizing: border-box; color: rgb(3, 47, 98);">'</span>path/to/darks/*.JPG<span class="pl-pds" style="box-sizing: border-box; color: rgb(3, 47, 98);">'</span></span>,<span class="pl-s" style="box-sizing: border-box; color: rgb(3, 47, 98);"><span class="pl-pds" style="box-sizing: border-box; color: rgb(3, 47, 98);">'</span>path/to/flats/*.JPG<span class="pl-pds" style="box-sizing: border-box; color: rgb(3, 47, 98);">'</span></span>);
-
-   <span class="pl-c" style="box-sizing: border-box; color: rgb(106, 115, 125);"><span class="pl-c" style="box-sizing: border-box; color: rgb(106, 115, 125);">%</span> stack. The first 'light' image will be used as Reference for stacking</span>
+   ma=mastrostack(<span class="pl-s" style="box-sizing: border-box; color: rgb(3, 47, 98);"><span class="pl-pds" style="box-sizing: border-box; color: rgb(3, 47, 98);">'</span>path/to/images/*.JPG<span class="pl-pds" style="box-sizing: border-box; color: rgb(3, 47, 98);">'</span></span>,<span class="pl-s" style="box-sizing: border-box; color: rgb(3, 47, 98);"><span class="pl-pds" style="box-sizing: border-box; color: rgb(3, 47, 98);">'</span>path/to/darks/*.JPG<span class="pl-pds" style="box-sizing: border-box; color: rgb(3, 47, 98);">'</span></span>,<span class="pl-s" style="box-sizing: border-box; color: rgb(3, 47, 98);"><span class="pl-pds" style="box-sizing: border-box; color: rgb(3, 47, 98);">'</span>path/to/flats/*.JPG<span class="pl-pds" style="box-sizing: border-box; color: rgb(3, 47, 98);">'</span></span>);<br><br><span class="pl-c" style="box-sizing: border-box; color: rgb(106, 115, 125);"><span class="pl-c" style="box-sizing: border-box; color: rgb(106, 115, 125);">   %</span> load more images</span><br>   load(ma,'*.JPG');<br><br>   <span class="pl-c" style="box-sizing: border-box; color: rgb(106, 115, 125);"><span class="pl-c" style="box-sizing: border-box; color: rgb(106, 115, 125);">%</span> stack. The first 'light' image will be used as Reference for stacking</span>
    stack(ma);</pre>
     </div>
     <h2 style="box-sizing: border-box; margin-top: 24px; margin-bottom:
@@ -827,14 +910,23 @@ href="https://github.com/farhi/matlab-mastrostack#using-commands-scripting"
           border-box; font-weight: 600;">about</strong><span>&nbsp;</span>display
 
 
+
+
         a dialg box</li>
+      <li style="box-sizing: border-box;"><b>align</b> same as cpselect
+        = align images<br>
+      </li>
       <li style="box-sizing: border-box; margin-top: 0.25em;"><strong
           style="box-sizing: border-box; font-weight: 600;">correct</strong><span>&nbsp;</span>correct
 
 
-        and image for dark (background) and flat (vigneting)</li>
+
+
+        an image for dark (background) and flat (vigneting)</li>
       <li style="box-sizing: border-box; margin-top: 0.25em;"><strong
           style="box-sizing: border-box; font-weight: 600;">cpselect</strong><span>&nbsp;</span>ALIGN
+
+
 
 
         images on reference</li>
@@ -842,9 +934,13 @@ href="https://github.com/farhi/matlab-mastrostack#using-commands-scripting"
           style="box-sizing: border-box; font-weight: 600;">diff</strong><span>&nbsp;</span>compute
 
 
+
+
         difference of an image with reference</li>
       <li style="box-sizing: border-box; margin-top: 0.25em;"><strong
           style="box-sizing: border-box; font-weight: 600;">delete</strong><span>&nbsp;</span>delete
+
+
 
 
         the mastrostack, and clear memory</li>
@@ -852,9 +948,13 @@ href="https://github.com/farhi/matlab-mastrostack#using-commands-scripting"
           style="box-sizing: border-box; font-weight: 600;">exist</strong><span>&nbsp;</span>check
 
 
+
+
         if an image has already been loaded</li>
       <li style="box-sizing: border-box; margin-top: 0.25em;"><strong
           style="box-sizing: border-box; font-weight: 600;">getdark</strong><span>&nbsp;</span>compute
+
+
 
 
         the master Dark</li>
@@ -862,9 +962,13 @@ href="https://github.com/farhi/matlab-mastrostack#using-commands-scripting"
           style="box-sizing: border-box; font-weight: 600;">getflat</strong><span>&nbsp;</span>compute
 
 
+
+
         the master Flat</li>
       <li style="box-sizing: border-box; margin-top: 0.25em;"><strong
           style="box-sizing: border-box; font-weight: 600;">imread</strong><span>&nbsp;</span>load
+
+
 
 
         an image and return its matrix and information</li>
@@ -872,19 +976,23 @@ href="https://github.com/farhi/matlab-mastrostack#using-commands-scripting"
           style="box-sizing: border-box; font-weight: 600;">label</strong><span>&nbsp;</span>label
 
 
+
+
         an image as light, dark, flat or skip</li>
       <li style="box-sizing: border-box; margin-top: 0.25em;"><strong
           style="box-sizing: border-box; font-weight: 600;">listdlg</strong><span>&nbsp;</span>display
 
 
+
+
         a selector for images</li>
       <li style="box-sizing: border-box; margin-top: 0.25em;"><strong
-          style="box-sizing: border-box; font-weight: 600;">load</strong><span>&nbsp;</span>load
-
-
-        an image and return its information</li>
+          style="box-sizing: border-box; font-weight: 600;">load</strong><span>
+        </span>load image(s) and return its information</li>
       <li style="box-sizing: border-box; margin-top: 0.25em;"><strong
           style="box-sizing: border-box; font-weight: 600;">mastrostack</strong><span>&nbsp;</span>create
+
+
 
 
         the Ma(e)strostack session</li>
@@ -892,9 +1000,13 @@ href="https://github.com/farhi/matlab-mastrostack#using-commands-scripting"
           style="box-sizing: border-box; font-weight: 600;">plot</strong><span>&nbsp;</span>plot
 
 
+
+
         the user interface and images</li>
       <li style="box-sizing: border-box; margin-top: 0.25em;"><strong
           style="box-sizing: border-box; font-weight: 600;">stack</strong><span>&nbsp;</span>STACK
+
+
 
 
         light images, correcting with dark and flat.</li>
@@ -938,6 +1050,8 @@ href="https://github.com/farhi/matlab-mastrostack#using-commands-scripting"
       text-decoration-style: initial; text-decoration-color: initial;">You
 
 
+
+
       only need Matlab, no external toolbox.</p>
     <p style="box-sizing: border-box; margin-top: 0px; margin-bottom:
       16px; color: rgb(36, 41, 46); font-family: -apple-system,
@@ -950,6 +1064,8 @@ href="https://github.com/farhi/matlab-mastrostack#using-commands-scripting"
       text-transform: none; white-space: normal; widows: 2;
       word-spacing: 0px; -webkit-text-stroke-width: 0px;
       text-decoration-style: initial; text-decoration-color: initial;">Copy
+
+
 
 
       the directory and navigate to it. Then type from the Matlab
@@ -981,8 +1097,12 @@ href="https://github.com/farhi/matlab-mastrostack#using-commands-scripting"
       text-decoration-style: initial; text-decoration-color: initial;">If
 
 
+
+
       you also have<span>&nbsp;</span><strong style="box-sizing:
         border-box; font-weight: 600;">readraw</strong><span>&nbsp;</span>installed
+
+
 
 
       and available, you will be able to import RAW camera images.</p>
@@ -1033,6 +1153,8 @@ href="https://github.com/farhi/matlab-mastrostack#using-commands-scripting"
           style="box-sizing: border-box; font-weight: 600;">astrotnstack</strong><span>&nbsp;</span>automatically
 
 
+
+
         align and stack astro-photography pictures<span>&nbsp;</span><a
           href="https://github.com/farhi/astrotnstack"
           style="box-sizing: border-box; background-color: transparent;
@@ -1059,6 +1181,8 @@ href="https://fr.mathworks.com/matlabcentral/fileexchange/53511-drag---drop-func
       text-transform: none; white-space: normal; widows: 2;
       word-spacing: 0px; -webkit-text-stroke-width: 0px;
       text-decoration-style: initial; text-decoration-color: initial;">See
+
+
 
 
       also:</p>
@@ -1109,6 +1233,8 @@ href="https://fr.mathworks.com/matlabcentral/fileexchange/53511-drag---drop-func
       text-indent: 0px; text-transform: none; white-space: normal;
       widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px;
       text-decoration-style: initial; text-decoration-color: initial;">(c)
+
+
 
 
       E. Farhi, 2018. GPL2.</p>

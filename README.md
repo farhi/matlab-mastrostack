@@ -23,13 +23,13 @@ Ma(e)stroStack: a Matlab class to automatically align and stack astro-photograph
   
 **ma = mastrostack(images)**
 
-  loads images without setting their type
+  loads images without setting their type and start the interface
   
 **ma = mastrostack(light, dark)**
 
 **ma = mastrostack(light, dark, flat)**
 
-  loads light, dark (background) and flat (scope response) images, and label them.
+  loads light, dark (background) and flat (scope response) images, label them, and start the interface
       
  Importing images
  ----------------
@@ -45,6 +45,14 @@ Ma(e)stroStack: a Matlab class to automatically align and stack astro-photograph
    Supported image formats include JPG, PNG, TIFF, FITS. 
    
    If you have installed **readraw** (see Credits section below), you may as well directly import RAW camera images. This is highly recommended, as it retains much more information from the camera than the generated JPEG images, which proves to be essential for subtracting the Dark image (background), and revealing faint objects.
+   
+   You may as well import images using the command (here using **readraw** from <https://github.com/farhi/matlab-readraw>):
+
+  ```matlab
+  addpath('path-to-readraw')
+  readraw;
+  ma.load('image.RAW');
+  ```
    
    Alternatively, you may use DCRAW on each RAW image with command
   
@@ -126,6 +134,9 @@ You may as well check visually for the best images either from the main window (
  ```matlab
     % create Ma(e)stroStack and import images
     ma=mastrostack('path/to/images/*.JPG','path/to/darks/*.JPG','path/to/flats/*.JPG');
+    
+    % load more images
+   load(ma,'*.JPG');
  
     % stack. The first 'light' image will be used as Reference for stacking
     stack(ma);
@@ -135,6 +146,7 @@ You may as well check visually for the best images either from the main window (
  -------
  
   - **about**           display a dialogue box
+  - **align**           same as cpselect = align images
   - **correct**         correct and image for dark (background) and flat (vignetting)
   - **cpselect**        ALIGN images on reference
   - **diff**            compute difference of an image with reference

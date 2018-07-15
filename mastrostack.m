@@ -49,10 +49,14 @@ classdef mastrostack < handle
   %  there. Images having 'dark' or 'flat' in their path/file name are marked as such
   %  automatically. You may alternatively use the File menu items.
   %
+  %  You may as well import images using the command:
+  %
+  %    ma.load('images');
+  %
   %  Supported image formats include JPG, PNG, TIFF, FITS. If you have installed
   %  readraw, you may as well directly import RAW camera images. This is highly
   %  recommended, as it retains much more information from the camera shot than the
-  %  generated JPEG images, which prooves to be essential for subtracting the Dark
+  %  generated JPEG images, which proves to be essential for subtracting the Dark
   %  image (background), and revealing faint objects.
   %
   %  Preparing the Stacking
@@ -103,6 +107,9 @@ classdef mastrostack < handle
   %     % create Ma(e)stroStack and import images
   %     ma=mastrostack('path/to/images/*.JPG','path/to/darks/*.JPG','path/to/flats/*.JPG');
   %
+  %     % load more images
+  %     ma.load('*.JPG')
+  %
   %     % stack. The first 'light' image will be used as Reference for stacking
   %     stack(ma);
   %
@@ -110,7 +117,7 @@ classdef mastrostack < handle
   % Methods
   % -------
   % about           display a dialg box
-  % correct         correct and image for dark (background) and flat (vigneting)
+  % correct         correct an image for dark (background) and flat (vigneting)
   % cpselect        ALIGN images on reference
   % diff            compute difference of an image with reference
   % delete          delete the mastrostack, and clear memory
