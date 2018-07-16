@@ -184,7 +184,6 @@ classdef mastrostack < handle
       % self = mastrostack(light, dark, flat)
       %   import specified 'light','dark','flat' images.
 
-      % load catalogs: objects, stars
       disp([ mfilename ': Welcome !' ]);
       
       if nargin == 1 % import images
@@ -201,6 +200,7 @@ classdef mastrostack < handle
       end
       
       plot(self);
+      end
       
     end % mastrostack
     
@@ -447,138 +447,7 @@ classdef mastrostack < handle
       im = im2uint(im, cl);
       
     end % correct
-    
-    function t=about(self)
-      % about: display an About dialog box
-      %
-      % t=about(self)
-      %   returns the 'about' string
-      
-      t = {'\bf Welcome to {\color{magenta}Ma(e)stroStack} ! (c) E.Farhi', ...
-          ' ', ...
-          'This application allows to stack amateur astro-photography images', ...
-          ' ', ...
-          '1- import any {\color{blue}Dark} images (taken with the cap on the scope)', ...
-          '2- import the {\color{blue}Flat} images (taken viewing a uniform surface)', ...
-          '3- import the {\color{blue}Light} images (those showing stars and deep sky objects)', ...
-          '4- compute master Dark and Flat', ...
-          '5- select the {\color{red}Reference} image (on which all images will be added)', ...
-          '6- stack ! (the alignment will then be done at the same time)', ...
-          ' ', ...
-          'You can look at images to mark those to ignore/skip (e.g. blurred)', ...
-          'To use them back set their type to e.g. Light', ...
-          ' ', ...
-          '{\color{red}Use keys and menu items:}', ...
-          '  L: mark current image as Light',...
-          '  D: mark current image as Dark',...
-          '  F: mark current image as Flat',...
-          '  I: mark current image as Skip/Ignore',...
-          '  R: mark current image as Reference',...
-          '  N or ->: see next image', ...
-          '  P or <-: see previous image', ...
-          '  A: select automatically control points for alignment', ...
-          '  click: add a control point in the image for alignment', ...
-          ' ' };
-      if nargout == 0
-        CreateMode.WindowStyle = 'modal';
-        CreateMode.Interpreter='tex';
-        msgbox(t, ...
-          'Ma(e)stroStack: About', CreateMode);
-      end
-    end % about
-    
-    function url=help(self)
-      % help(self): open the Help page
-      url = fullfile('file:///',fileparts(which(mfilename)),'doc','mastrostack.html');
-      open_system_browser(url);
-    end
-    
-    function h=plot(self, img, im)
-      % plot: plot images
-      %
-      % h=plot(self)
-      %   plot the current or first 'light' image
-      % h=plot(self, image)
-      %   same as above with specified image (can be given as name or index)
-      if nargin < 2
-        % we search for the first 'light' image
-        img = [];
-        for index=1:numel(self.images)
-          if strcmp(self.images(index).type, 'light') || isempty(self.images(index).type)
-            img = self.images(index);
-            break
-          end
-        end
-        if isempty(img), img = 1; end
-      end
-      
-      fig = findall(0, 'Tag', 'mastrostack');
-      if isempty(fig) % build the figure
-        fig = build_interface(self);
-        
-        t = text(0.1,0.5, about(self), 'Units','normalized');
-        xl=[]; yl=[];
-      else
-        set(0, 'CurrentFigure',fig); % activate but no raise
-        % get current xlim/ylim (to retain any zoom)
-        xl = xlim; yl=ylim;
-      end
-      self.figure = fig;
-      
-      if nargin >= 3 && ischar(im)
-        option = im;
-        im     = [];
-      else option = '';
-      end
 
-      % get the image
-      if nargin < 3 || isempty(im) || ~isnumeric(im)
-        [im, img] = imread(self, img);
-      else
-        [~, img] = imread(self, img, 0);
-      end
-      if isempty(img) || isempty(im), return; end
-      self.currentImage = img.index;
-      t = [ self.images(self.currentImage).id ...
-        ' ' self.images(self.currentImage).type ];
-      if self.images(self.currentImage).sharpness > 0
-        t = [ t ' sharp=' num2str(self.images(self.currentImage).sharpness) ];
-      end
-      if self.images(self.currentImage).width > 0
-        t = [ t ' width=' num2str(self.images(self.currentImage).width) ];
-      end
-      if self.images(self.currentImage).intensity > 0
-        t = [ t ' int=' num2str(self.images(self.currentImage).intensity) ];
-      end
-      if strcmp(self.images(self.currentImage).type, 'light') && ...
-        ((~isempty(self.flat) && ~isscalar(self.flat)) || ...
-         (~isempty(self.dark) && ~isscalar(self.dark)))
-        im = correct(self, im);
-        t = [ t ' (-dark, /flat)' ];
-      end
-      t = [ t ' [' num2str(self.currentImage) '/' num2str(numel(self.images)) ']' ];
-      
-      im = im2uint(im,'uint8');
-      logscale = findobj(self.figure, 'Tag', 'LogScale');
-      logscale = get(logscale, 'Checked');
-      if strcmp(option, 'log') || strcmp(logscale, 'on')
-        im = imlogscale(im);
-      end
-      h = image(im);
-      if ~isempty(xl)
-        xlim(xl); ylim(yl);
-      end
-      title(t);
-
-      % display control points
-      hold on
-      self.images(self.currentImage).points.handle = scatter(...
-        self.images(self.currentImage).points.y, ...
-        self.images(self.currentImage).points.x, 100, 'g', 'o');
-      hold off
-      
-    end % plot
-    
     function [im, filename] = stack(self, filename)
       % stack: stack all images on the reference
       %
@@ -786,42 +655,8 @@ classdef mastrostack < handle
       end
     end % label
     
-    function selection = listdlg(self, name, SelectionMode)
-      % listdlg: display a dialog list to select images
-      %
-      % listdlg(self)
-      %   display a dialog to select some images. return the selection indices
-      % listdlg(self, title)
-      %   display a dialog to select some images with given dialog title
-      % listdlg(self, title, 'single' or 'multiple')
-      %   display a dialog with title, and single or multiple selection ability
-
-      if nargin < 2, name          = 'select image'; end
-      if nargin < 3, SelectionMode = 'multiple'; end
-      liststring = {};
-      for index=1:numel(self.images)
-        this = self.images(index);
-        if ischar(this.source)
-          liststring{end+1} = this.source;
-        else
-          liststring{end+1} = this.id;
-        end
-        % we add type sharpness
-        liststring{end} = [ liststring{end} ' [' num2str(index) '] ' upper(this.type) ...
-          ' sharp=' num2str(this.sharpness) ];
-        if isfield(this.points,'sx') && ~isempty(this.points.sx) && ~isempty(this.points.sy)
-          liststring{end} = [ liststring{end} ...
-          ' width=' num2str(this.width) ];
-        end
-      end
-      if isempty(liststring), selection=[]; return; end
-      [selection, ok] = listdlg('ListString', liststring, ...
-        'ListSize', [480 640], ...
-        'SelectionMode', SelectionMode, ...
-        'Name', [ mfilename ': ' name ]);
-    end % listdlg
-    
     function [this_img, self] = align(self, img, im)
+      % align: automatically set control points
       [this_img, self] = cpselect(self, img, im);
     end
     
@@ -902,6 +737,176 @@ classdef mastrostack < handle
       end
       
     end % cpselect
+   
+   
+    
+    % GUI stuff ----------------------------------------------------------------
+    
+    function t=about(self)
+      % about: display an About dialog box
+      %
+      % t=about(self)
+      %   returns the 'about' string
+      
+      t = {'\bf Welcome to {\color{magenta}Ma(e)stroStack} ! (c) E.Farhi', ...
+          ' ', ...
+          'This application allows to stack amateur astro-photography images', ...
+          ' ', ...
+          '1- import any {\color{blue}Dark} images (taken with the cap on the scope)', ...
+          '2- import the {\color{blue}Flat} images (taken viewing a uniform surface)', ...
+          '3- import the {\color{blue}Light} images (those showing stars and deep sky objects)', ...
+          '4- compute master Dark and Flat', ...
+          '5- select the {\color{red}Reference} image (on which all images will be added)', ...
+          '6- stack ! (the alignment will then be done at the same time)', ...
+          ' ', ...
+          'You can look at images to mark those to ignore/skip (e.g. blurred)', ...
+          'To use them back set their type to e.g. Light', ...
+          ' ', ...
+          '{\color{red}Use keys and menu items:}', ...
+          '  L: mark current image as Light',...
+          '  D: mark current image as Dark',...
+          '  F: mark current image as Flat',...
+          '  I: mark current image as Skip/Ignore',...
+          '  R: mark current image as Reference',...
+          '  N or ->: see next image', ...
+          '  P or <-: see previous image', ...
+          '  A: select automatically control points for alignment', ...
+          '  click: add a control point in the image for alignment', ...
+          ' ' };
+      if nargout == 0
+        CreateMode.WindowStyle = 'modal';
+        CreateMode.Interpreter='tex';
+        msgbox(t, ...
+          'Ma(e)stroStack: About', CreateMode);
+      end
+    end % about
+    
+    function url=help(self)
+      % help(self): open the Help page
+      url = fullfile('file:///',fileparts(which(mfilename)),'doc','mastrostack.html');
+      open_system_browser(url);
+    end
+    
+    function h=plot(self, img, im)
+      % plot: plot images
+      %
+      % h=plot(self)
+      %   plot the current or first 'light' image
+      % h=plot(self, image)
+      %   same as above with specified image (can be given as name or index)
+      if nargin < 2
+        % we search for the first 'light' image
+        img = [];
+        for index=1:numel(self.images)
+          if strcmp(self.images(index).type, 'light') || isempty(self.images(index).type)
+            img = self.images(index);
+            break
+          end
+        end
+        if isempty(img), img = 1; end
+      end
+      
+      fig = findall(0, 'Tag', 'mastrostack');
+      if isempty(fig) % build the figure
+        fig = build_interface(self);
+        
+        t = text(0.1,0.5, about(self), 'Units','normalized');
+        xl=[]; yl=[];
+      else
+        set(0, 'CurrentFigure',fig); % activate but no raise
+        % get current xlim/ylim (to retain any zoom)
+        xl = xlim; yl=ylim;
+      end
+      self.figure = fig;
+      
+      if nargin >= 3 && ischar(im)
+        option = im;
+        im     = [];
+      else option = '';
+      end
+
+      % get the image
+      if nargin < 3 || isempty(im) || ~isnumeric(im)
+        [im, img] = imread(self, img);
+      else
+        [~, img] = imread(self, img, 0);
+      end
+      if isempty(img) || isempty(im), return; end
+      self.currentImage = img.index;
+      t = [ self.images(self.currentImage).id ...
+        ' ' self.images(self.currentImage).type ];
+      if self.images(self.currentImage).sharpness > 0
+        t = [ t ' sharp=' num2str(self.images(self.currentImage).sharpness) ];
+      end
+      if self.images(self.currentImage).width > 0
+        t = [ t ' width=' num2str(self.images(self.currentImage).width) ];
+      end
+      if self.images(self.currentImage).intensity > 0
+        t = [ t ' int=' num2str(self.images(self.currentImage).intensity) ];
+      end
+      if strcmp(self.images(self.currentImage).type, 'light') && ...
+        ((~isempty(self.flat) && ~isscalar(self.flat)) || ...
+         (~isempty(self.dark) && ~isscalar(self.dark)))
+        im = correct(self, im);
+        t = [ t ' (-dark, /flat)' ];
+      end
+      t = [ t ' [' num2str(self.currentImage) '/' num2str(numel(self.images)) ']' ];
+      
+      im = im2uint(im,'uint8');
+      logscale = findobj(self.figure, 'Tag', 'LogScale');
+      logscale = get(logscale, 'Checked');
+      if strcmp(option, 'log') || strcmp(logscale, 'on')
+        im = imlogscale(im);
+      end
+      h = image(im);
+      if ~isempty(xl)
+        xlim(xl); ylim(yl);
+      end
+      title(t);
+
+      % display control points
+      hold on
+      self.images(self.currentImage).points.handle = scatter(...
+        self.images(self.currentImage).points.y, ...
+        self.images(self.currentImage).points.x, 100, 'g', 'o');
+      hold off
+      
+    end % plot
+    
+    function selection = listdlg(self, name, SelectionMode)
+      % listdlg: display a dialog list to select images
+      %
+      % listdlg(self)
+      %   display a dialog to select some images. return the selection indices
+      % listdlg(self, title)
+      %   display a dialog to select some images with given dialog title
+      % listdlg(self, title, 'single' or 'multiple')
+      %   display a dialog with title, and single or multiple selection ability
+
+      if nargin < 2, name          = 'select image'; end
+      if nargin < 3, SelectionMode = 'multiple'; end
+      liststring = {};
+      for index=1:numel(self.images)
+        this = self.images(index);
+        if ischar(this.source)
+          liststring{end+1} = this.source;
+        else
+          liststring{end+1} = this.id;
+        end
+        % we add type sharpness
+        liststring{end} = [ liststring{end} ' [' num2str(index) '] ' upper(this.type) ...
+          ' sharp=' num2str(this.sharpness) ];
+        if isfield(this.points,'sx') && ~isempty(this.points.sx) && ~isempty(this.points.sy)
+          liststring{end} = [ liststring{end} ...
+          ' width=' num2str(this.width) ];
+        end
+      end
+      if isempty(liststring), selection=[]; return; end
+      [selection, ok] = listdlg('ListString', liststring, ...
+        'ListSize', [480 640], ...
+        'SelectionMode', SelectionMode, ...
+        'Name', [ mfilename ': ' name ]);
+    end % listdlg
   
   end % methods
   
