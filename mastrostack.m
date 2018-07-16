@@ -200,7 +200,6 @@ classdef mastrostack < handle
       end
       
       plot(self);
-      end
       
     end % mastrostack
     
