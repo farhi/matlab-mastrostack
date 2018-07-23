@@ -21,7 +21,7 @@ function [im, img, exif] = imread_single(source, images, flag)
       if flag, im       = imread(source); end
       disp([ mfilename ': Reading ' source ' (from file)']);
     catch ME
-      disp([ mfilename ': Skipping ' source ]);
+      disp([ mfilename ': Skipping ' source ' (imread error)' ]);
       return
     end
   elseif (isnumeric(source) || isstruct(source)) && isscalar(source)
@@ -36,7 +36,12 @@ function [im, img, exif] = imread_single(source, images, flag)
     % make sure we can get the image (matrix), when img was retrieved but not image
     if ~isempty(img) && flag && ischar(img.source)
       disp([ mfilename ': Reading ' img.source ' (from image ref)' ]);
-      im = imread(img.source);
+      try
+        im = imread(img.source);
+      catch ME
+        disp([ mfilename ': Skipping ' source ' (imread error)' ]);
+        return
+      end
     end
   elseif isnumeric(source) && ~isempty(source)
     exif     = [];

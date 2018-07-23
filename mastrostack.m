@@ -117,7 +117,8 @@ classdef mastrostack < handle
   % Methods
   % -------
   % about           display a dialg box
-  % correct         correct an image for dark (background) and flat (vigneting)
+  % close           close the MastroStack window. Re-open with plot.
+  % correct         correct an image for dark (background) and flat (vignetting)
   % cpselect        ALIGN images on reference
   % diff            compute difference of an image with reference
   % delete          delete the mastrostack, and clear memory
@@ -311,7 +312,7 @@ classdef mastrostack < handle
           if isempty(this), continue; end
           if ischar(source) && ~isempty(this.source) && ischar(this.source)
             % found: same name
-            if strcmp(this.source, source) || strcmp(this.id, source)
+            if strcmp(this.source, source)
               found = index;
               break; 
             end
@@ -323,8 +324,7 @@ classdef mastrostack < handle
               break; 
             end
           elseif isstruct(source)
-            if any(strcmp(this.source, { source.source })) ...
-            || any(strcmp(this.id, { source.id }))
+            if any(strcmp(this.source, { source.source })) 
               found = index;
               break; 
             end
@@ -418,7 +418,7 @@ classdef mastrostack < handle
     end % getflat
 
     function im = correct(self, im, cl)
-      % correct: correct an image for vigneting and background
+      % correct: correct an image for vignetting and background
       %
       % correct(self, im)
       %   divide the image by the flat, and subtract the dark
@@ -431,12 +431,22 @@ classdef mastrostack < handle
       if isempty(im), return; end
       im = im2uint(im, 'uint16');
       
+      % remove hot spots. These have a single channel (RGB) higher than 2e4
+      % and the others are lower than 1100. This is arbitrary, but usual.
+      h = uint16(20000);
+      l = uint16(1100);
+      index=find( ...
+        (im(:,:,1) > h & im(:,:,2) + im(:,:,3) < l) | ...
+        (im(:,:,2) > h & im(:,:,3) + im(:,:,1) < l) | ...
+        (im(:,:,3) > h & im(:,:,1) + im(:,:,2) < l) );
+      im(index) = 0; % to dark
+      
       % correct for read-out/sensor noise (subtract)
       if ~isempty(self.dark) && ~isscalar(self.dark) && ndims(self.dark) == 3
         im = im - self.dark; % dark is a uint16
       end
       
-      % correct for flat field to compensate vigneting (divide)
+      % correct for flat field to compensate vignetting (divide)
       if ~isempty(self.flat) && ~isscalar(self.flat)
         for l=1:size(im,3)
           im(:,:,l) = im2uint(imdouble(im(:,:,l))./double(self.flat),'uint16');
@@ -871,6 +881,12 @@ classdef mastrostack < handle
       hold off
       
     end % plot
+    
+    function close(self)
+      % close: close the MastroStack figure. Re-open with plot.
+      self.dndcontrol = [];
+      delete(self.figure);
+    end
     
     function selection = listdlg(self, name, SelectionMode)
       % listdlg: display a dialog list to select images
