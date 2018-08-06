@@ -885,7 +885,9 @@ classdef mastrostack < handle
     function close(self)
       % close: close the MastroStack figure. Re-open with plot.
       self.dndcontrol = [];
-      delete(self.figure);
+      if ishandle(self.figure)
+        delete(self.figure);
+      end
     end
     
     function selection = listdlg(self, name, SelectionMode)
