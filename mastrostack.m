@@ -697,7 +697,7 @@ classdef mastrostack < handle
         % get the image
         [~, this_img]  = imread(self, this_img, 0);
 
-        if ~isfield(this_img.points,'x') || isempty(this_img.points.x) || nargin < 2
+        if ~isfield(this_img.points,'x') || isempty(this_img.points.x)
         
           if nargin < 3 || isempty(im) || ~isnumeric(im)
             [im, this_img] = imread(self, this_img, 1);
@@ -743,6 +743,7 @@ classdef mastrostack < handle
         if isempty(nimg), nimg = this_img;
         else nimg = [ nimg this_img]; end
         self.images(this_img.index) = this_img;
+        
       end % for
       if numel(img) > 1 && ~isempty(wb)
         delete(findall(0, 'Tag', [ mfilename '_waitbar' ]));
@@ -1095,7 +1096,7 @@ function MenuCallback(src, evnt, self)
       title([ self.images(self.currentImage).id ...
           ' ' self.images(self.currentImage).type ]);
     end
-  case {'C','Clear all control points','Clear control points (this image)'}  % clear points
+  case {'C','Clear control points (this image)'}  % clear points
     if ~isempty(self.currentImage) && ...
       numel(self.images) >= self.currentImage && self.currentImage > 0
       self.images(self.currentImage).points.x = [];
@@ -1106,6 +1107,12 @@ function MenuCallback(src, evnt, self)
       if ishandle(self.images(self.currentImage).points.handle)
         delete(self.images(self.currentImage).points.handle);
       end
+    end
+  case {'Clear control points...'}
+    points = struct('x',[],'y',[],'m',[],'sx',[],'sy',[],'sharpness',[],'handle',[]);
+    selection = listdlg(self, 'select image(s) to clear control point for');
+    for index=selection(:)'
+      self.images(index).points = points;
     end
   case {'Automatic control points','A'}
     % search points=(x,y,m,sx,sy) and store
@@ -1187,7 +1194,7 @@ function MenuCallback(src, evnt, self)
     end
     self.currentImage = 0;
   case 'Clear skipped image(s)'
-    disp([ mfilename ': Removing skipped images:' ]);
+    disp([ mfilename ': Removing skipped images from list:' ]);
     for index=numel(self.images):-1:1
       if strcmp(self.images(index).index, 'skip')
         if ischar(self.images(index).source)
@@ -1229,6 +1236,21 @@ function MenuCallback(src, evnt, self)
     end
   case 'Select images on sharpness...'
     select_on_sharpness(self);
+  case 'Show control point metrics...'
+    x         = 1:numel(self.images);
+    width     = [ self.images.width ];
+    sharpness = [ self.images.sharpness ];
+    intensity = [ self.images.intensity ];
+    image_sum = [ self.images.image_sum ];
+    f=figure;
+    subplot(2,2,1); plot(x,width); 
+    xlabel('Image index'); ylabel('Mean width/CP [px]'); title('Mean control point width (low is best)')
+    subplot(2,2,2); plot(x,sharpness); 
+    xlabel('Image index'); ylabel('Mean sharpness/CP'); title('Mean control point sharpness (high is best)')
+    subplot(2,2,3); plot(x,intensity); 
+    xlabel('Image index'); ylabel('Mean Intensity/CP'); title('Mean control point intensity')
+    subplot(2,2,4); plot(x,image_sum); 
+    xlabel('Image index'); ylabel('Total intensity'); title('Total intensity')
   case 'About'
     about(self);
   case 'Help'
@@ -1338,7 +1360,11 @@ function fig = build_interface(self)
       'Callback', {@MenuCallback, self },'Accelerator','a');
     uimenu(m, 'Label', 'Clear control points (this image)',        ...
       'Callback', {@MenuCallback, self },'Accelerator','c');
+    uimenu(m, 'Label', 'Clear control points...', ...
+      'Callback', {@MenuCallback, self });
     uimenu(m, 'Label', 'Select images on sharpness...',        ...
+      'Callback', {@MenuCallback, self });
+    uimenu(m, 'Label', 'Show control point metrics...', ...
       'Callback', {@MenuCallback, self });
     uimenu(m, 'Label', 'Compute master Dark', 'Separator','on',        ...
       'Callback', {@MenuCallback, self });
