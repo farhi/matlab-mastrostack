@@ -140,6 +140,7 @@ classdef mastrostack < handle
     toleranceTranslation  = 0.01; % in percent
     toleranceRotation     = 1;    % in deg
     deadPixelArea         = 9;
+    removeHotPixels       = 1;
     reference             = 0;    % by default the first 'light' image
     
     images = [];
@@ -154,7 +155,6 @@ classdef mastrostack < handle
     %      translation
     %      sharpness
     %      width
-    %      thumbnail
     
     % the actual image matrices are not stored (except when given as such)
     % as we expect to handle 100's of images.
@@ -351,7 +351,7 @@ classdef mastrostack < handle
       
       if any(~isfinite(self.dark)), self.dark=0; end
       if isempty(self.dark) || isscalar(self.dark)
-        disp([ mfilename ': computing master Dark' ])
+        disp([ mfilename ':   computing master Dark' ])
         sumDarks = 0;
         nbDarks  = 0;
         for index=1:numel(self.images)
@@ -382,7 +382,7 @@ classdef mastrostack < handle
       
       if any(~isfinite(self.flat)), self.flat=0; end
       if isempty(self.flat) || isscalar(self.flat)
-        disp([ mfilename ': computing master Flat' ])
+        disp([ mfilename ':   computing master Flat' ])
         sumFlats = 0;
         nbFlats  = 0;
         for index=1:numel(self.images)
@@ -433,13 +433,19 @@ classdef mastrostack < handle
       
       % remove hot spots. These have a single channel (RGB) higher than 2e4
       % and the others are lower than 1100. This is arbitrary, but usual.
-      h = uint16(20000);
-      l = uint16(1100);
-      index=find( ...
-        (im(:,:,1) > h & im(:,:,2) + im(:,:,3) < l) | ...
-        (im(:,:,2) > h & im(:,:,3) + im(:,:,1) < l) | ...
-        (im(:,:,3) > h & im(:,:,1) + im(:,:,2) < l) );
-      im(index) = 0; % to dark
+      if size(im,3) == 3
+        h = uint16(20000);
+        l = uint16(1100);
+        index=find( ...
+          (im(:,:,1) > h & im(:,:,2) + im(:,:,3) < l) | ...
+          (im(:,:,2) > h & im(:,:,3) + im(:,:,1) < l) | ...
+          (im(:,:,3) > h & im(:,:,1) + im(:,:,2) < l) );
+        for layer=1:size(im,3)
+          l           = im(:,:,layer);
+          l(index)    = 0;     % to dark 
+          im(:,:,layer) = l;
+        end
+      end
       
       % correct for read-out/sensor noise (subtract)
       if ~isempty(self.dark) && ~isscalar(self.dark) && ndims(self.dark) == 3
@@ -521,6 +527,8 @@ classdef mastrostack < handle
       
       for index=1:numel(self.images)
         this_img = self.images(index);
+        this_img.translation = [ 0 ; 0 ];
+        this_img.rotation    = 0;
         
         if isempty(this_img.type) || strcmp('light', this_img.type)
           stackedimages= stackedimages+1;
@@ -550,8 +558,11 @@ classdef mastrostack < handle
           plot(self, this_img, im);
           
           % compute the affine transformation wrt reference (using control points)
-          [ret_t, ret_R] = diff(self, this_img);
+          [ret_t, ret_R, theta] = diff(self, this_img);
           if isempty (ret_t), continue; end
+          
+          this_img.rotation    = theta;
+          this_img.translation = ret_t(:);
           
           % we read the image and transform it
           [im,M]     = imaffine(im, ret_R, ret_t);
@@ -588,6 +599,7 @@ classdef mastrostack < handle
             break;
           end
         end
+        self.images(index) = this_img;
       end % for
       
       disp([ mfilename ': Total exposure on stacked image: ' num2str(ExposureTime) ' [s]' ]);
@@ -616,7 +628,7 @@ classdef mastrostack < handle
       end
     end % stack
     
-    function [ret_t, ret_R, self] = diff(self, img1)
+    function [ret_t, ret_R, theta, self] = diff(self, img1)
       % diff: compute the translation and rotation wrt reference image
       %
       % [t,R] = diff(self, image)
@@ -633,7 +645,7 @@ classdef mastrostack < handle
       end
       
       if isempty(img2), return; end
-      [ret_t, ret_R] = imdiff(self, img2, img1);
+      [ret_t, ret_R, theta] = imdiff(self, img2, img1);
     end % diff
     
     function label(self, lab, img)
@@ -1206,17 +1218,19 @@ function MenuCallback(src, evnt, self)
   case 'Close'
     self.dndcontrol = [];
     delete(gcf);
-  case 'Set tolerances'
-    prompt={'\bf {\color{blue}tolerance on Translation} (in % of image size, 0-1, e.g 0.01):', ...
-      '\bf {\color{blue}tolerance on Rotation} [in deg, e.g. 1]:', ...
-      '\bf {\color{blue}Nb of Control Points} [e.g. 30-50]:', ...
-      '\bf {\color{blue}Dead Pixel Area} [in pixel^2 e.g. 6-9, 0 not to ignore dead pixels]:' };
+  case {'Set tolerances','Preferences'}
+    prompt={'\bf {\color{blue}Tolerance on Translation} (in % of image size, 0-1, e.g 0.01):', ...
+      '\bf {\color{blue}Tolerance on Rotation} [in deg, e.g. 1]:', ...
+      '\bf {\color{blue}Nb of Control Points (CP)} [e.g. 30-50]:', ...
+      '\bf {\color{blue}Dead Pixel Area} [in pixel^2 e.g. 6-9, 0 not to ignore dead pixels in CP]:', ...
+      '\bf {\color{blue}Remove Dead/Hot Pixels} [0=no, 1=yes]:' };
     name=[ mfilename ': Settings' ];
     numlines=1;
     defaultanswer={ num2str(self.toleranceTranslation), ...
                     num2str(self.toleranceRotation), ...
                     num2str(self.nbControlPoints), ...
-                    num2str(self.deadPixelArea) };
+                    num2str(self.deadPixelArea), ...
+                    num2str(self.removeHotPixels) };
     options.Resize='on';
     options.WindowStyle='normal';
     options.Interpreter='tex';
@@ -1234,6 +1248,9 @@ function MenuCallback(src, evnt, self)
     if isfinite(str2double(answer{4}))
       self.deadPixelArea = str2double(answer{4});
     end
+    if isfinite(str2double(answer{5}))
+      self.removeHotPixels = str2double(answer{5});
+    end
   case 'Select images on sharpness...'
     select_on_sharpness(self);
   case 'Show control point metrics...'
@@ -1242,15 +1259,51 @@ function MenuCallback(src, evnt, self)
     sharpness = [ self.images.sharpness ];
     intensity = [ self.images.intensity ];
     image_sum = [ self.images.image_sum ];
+    translation = [self.images.translation];
+    translation1 = translation(1,:);
+    translation2 = translation(2,:);
+    rotation  = [ self.images.rotation ];
+    if any(translation1) || any(translation2) || any(rotation)
+      m=3; n=3;
+    else
+      m=2;n=2;
+    end
     f=figure;
-    subplot(2,2,1); plot(x,width); 
+    subplot(m,n,1); plot(x,width); axis tight
     xlabel('Image index'); ylabel('Mean width/CP [px]'); title('Mean control point width (low is best)')
-    subplot(2,2,2); plot(x,sharpness); 
+    subplot(m,n,2); plot(x,sharpness); axis tight
     xlabel('Image index'); ylabel('Mean sharpness/CP'); title('Mean control point sharpness (high is best)')
-    subplot(2,2,3); plot(x,intensity); 
+    subplot(m,n,3); plot(x,intensity); axis tight
     xlabel('Image index'); ylabel('Mean Intensity/CP'); title('Mean control point intensity')
-    subplot(2,2,4); plot(x,image_sum); 
+    subplot(m,n,4); plot(x,image_sum); axis tight
     xlabel('Image index'); ylabel('Total intensity'); title('Total intensity')
+    if any(translation1) || any(translation2) || any(rotation)
+      subplot(m,n,5); plot(x,translation1); axis tight
+      xlabel('Image index'); ylabel('Translation (X)'); title('Translation (X)')
+      subplot(m,n,6); plot(x,translation2); axis tight
+      xlabel('Image index'); ylabel('Translation (Y)'); title('Translation (Y)')
+      subplot(m,n,7); plot(translation1,translation2,'.'); axis tight
+      xlabel('Translation (X)'); ylabel('Translation (Y)'); title('Translation (X,Y)')
+      subplot(m,n,8); plot(x,rotation); axis tight
+      xlabel('Image index'); ylabel('Rotation (deg)'); title('Image rotation')
+      % now compute for all images the behaviour of the width vs radius from centre
+      subplot(m,n,9); c0='rgbkcm';
+      for index=1:numel(self.images)
+        t = self.images(index).type;
+        if isempty(t) || strcmp(t, 'light')
+          x =self.images(index).points.x;        y =self.images(index).points.y; 
+          sx=self.images(index).points.sx;
+          x0=self.images(index).image_size(1)/2; y0=self.images(index).image_size(2)/2;
+          r2=(x-x0).^2+(y-y0).^2; r=sqrt(r2);
+          i0=index*ones(size(r)); c=c0(mod(index, numel(c0))+1);
+          plot3(i0, r, sx, [ c '.' ]);
+          hold on
+        end
+      end % index
+      hold off
+      xlabel('Image index'); ylabel('Radius from centre [px]'); zlabel('Peak width [px]'); title('Peak Width vs Radius')
+      axis tight
+    end
   case 'About'
     about(self);
   case 'Help'
@@ -1320,6 +1373,8 @@ function fig = build_interface(self)
       'Callback', {@MenuCallback, self });
     uimenu(m, 'Label', 'Save current image',        ...
       'Callback', {@MenuCallback, self });
+    uimenu(m, 'Label', 'Preferences',        ...
+      'Callback', {@MenuCallback, self }, 'Separator','on');
     uimenu(m, 'Label', 'Print',        ...
       'Callback', 'printdlg(gcbf)');
     uimenu(m, 'Label', 'Close',        ...
@@ -1354,8 +1409,6 @@ function fig = build_interface(self)
       'Callback', {@MenuCallback, self });
     
     m = uimenu(fig, 'Label', 'Compute');
-    uimenu(m, 'Label', 'Set tolerances',        ...
-      'Callback', {@MenuCallback, self });
     uimenu(m, 'Label', 'Automatic control points',        ...
       'Callback', {@MenuCallback, self },'Accelerator','a');
     uimenu(m, 'Label', 'Clear control points (this image)',        ...
@@ -1385,6 +1438,8 @@ function fig = build_interface(self)
     set(gca, 'ButtonDownFcn', {@ButtonDownCallback, self }); % will get its CurrentPoint
     set(fig, 'UserData',self);
 end % build_interface
+
+% Sharpness window events ------------------------------------------------------
 
 function fig = build_interfaceSharp(self)
   % build_interfaceSharp: build the sharpness window menus

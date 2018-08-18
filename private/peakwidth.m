@@ -43,7 +43,7 @@ function [s,f,m] = peakwidth(im, x0, dx)
   [s2, f2] = width1(Y, im1(x0(1), Y));
   
   is = find(im2-min(im2(:)) > max(im2(:))/2); % nb of pixels above half height
-  s  = sqrt(numel(is)); 
+  s  = sqrt(numel(is)/pi); % area is pi*r^2
   s  = [ s s ];
   f  = [ f1 f2 ];
   if im1(x0(1), x0(2))*.8 > im1(round(f(1)), round(f(2))), f = x0; end

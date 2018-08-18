@@ -72,7 +72,7 @@ function [ret_t, ret_R, theta] = imdiff(self, img1, img2)
         theta = theta - 360;
       end
       if abs(theta-(theta2-theta1)) > tol_rot
-        disp([ mfilename ': WARNING: invalid affine rotation theta=' num2str([theta theta2-theta1]) '. Skipping.']);
+        disp([ mfilename ': WARNING: invalid affine rotation delta_theta=' num2str([theta theta2-theta1]) '. Skipping.']);
         ret_t = [];
         return
       end
