@@ -71,7 +71,7 @@ Ma(e)stroStack: a Matlab class to automatically align and stack astro-photograph
 
   It is recommended to zoom onto specific features (e.g. a set of stars) to check visually for their sharpness. De-select the Zoom tool, and scan through images using the left arrow key, and press the 'I' key to mark images to be ignored, such as those blurred. To reset the plot, press the Return key.
 
-  You can select the Reference image, which will be used as template for stacking. If not defined, the first image in the list will be used as such when stacking.
+  You can select the Reference image, which will be used as template for stacking. If not defined, the sharpest image in the list will be used as such when stacking.
 
   Optionally, use the Compute/Align item to compute the images control points (stars) which also corrects for background and scope response when dark and flat are defined. This procedure computes a metric to quantify the sharpness. 
    
@@ -138,7 +138,8 @@ You may as well check visually for the best images either from the main window (
     % load more images
    load(ma,'*.JPG');
  
-    % stack. The first 'light' image will be used as Reference for stacking
+    % stack. The sharpest 'light' image will be used as Reference for stacking
+    align(ma);
     stack(ma);
 ```
  
@@ -171,11 +172,15 @@ You may as well check visually for the best images either from the main window (
   Copy the directory and navigate to it. Then type from the Matlab prompt:
 
   ```matlab
-  addpath(pwd)
+  addpath('/path/to/mastrostack')
   ```
   
   If you also have **readraw** installed and available (see below), you will be able to import
   RAW camera images. 
+  ```matlab
+  addpath('/path/to/readraw')
+  readraw;
+  ```
   
  Credits
  -------
