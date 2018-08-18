@@ -73,7 +73,7 @@ classdef mastrostack < handle
   %  such as those blurred. To reset the plot, press the Return key.
   %
   %  You can select the Reference image, which will be used as template for stacking.
-  %  If not defined, the first image in the list will be used as such when stacking.
+  %  If not defined, the sharpest image in the list will be used as such when stacking.
   %
   %  Optionally, use the Compute/Align item to compute the images control points
   %  (stars) which also corrects for background and scope response when dark and flat
@@ -141,7 +141,8 @@ classdef mastrostack < handle
     toleranceRotation     = 1;    % in deg
     deadPixelArea         = 9;
     removeHotPixels       = 1;
-    reference             = 0;    % by default the first 'light' image
+    extendImage           = 0;
+    reference             = [];   % by default the first 'light' image
     
     images = [];
     %      id
@@ -482,60 +483,31 @@ classdef mastrostack < handle
       getdark(self);
       getflat(self);
 
-      self.light = 0.0;
-      self.lightN= uint8(0);
+      self.light   = 0.0;
+      self.lightN  = uint8(0);
       ExposureTime = 0;
       if nargin < 2, filename = ''; end
       
-      nbtostack = 0;
-      
       % we first check for the reference and its control points
-      for index=1:numel(self.images)
-        this_img = self.images(index);
-    
-        if isempty(this_img.type) || strcmp('light', this_img.type)
-          if ~self.reference || self.reference == index
-            self.reference = index;
-            this_img       = self.images(self.reference);
-            self.images(self.reference).type = 'reference';
-            disp([ mfilename ':   using reference as ' this_img.id ' (' num2str(index) ')' ])
-            im = correct(self, imread(self, this_img)); % read and correct image
-            if isempty(this_img.points) || ~isstruct(this_img.points) || ...
-              ~isfield(this_img.points, 'x') || numel(this_img.points.x) < 2
-              % compute control points
-              disp([ mfilename ':   computing control points for ' this_img.id ' (' num2str(index) ') REF' ])
-              [this_img, self] = cpselect(self, this_img, im);
-              % self.images(self.reference) = this_img;
-            end
-            self.light  = imdouble(im);
-            clear im
-            self.lightN = self.lightN+1;
-            if isfield(this_img.exif, 'ExposureTime')
-              ExposureTime = ExposureTime + this_img.exif.ExposureTime;
-            end
-          end
-          nbtostack = nbtostack+1;
-        end
-      end
-      if self.reference < 1 || self.reference > numel(self.images), return; end
+      [nbtostack, self] = get_reference(self);
       
+      if ~nbtostack, return; end
+      
+      % set waitbar etc...
       delete(findall(0, 'Tag', [ mfilename '_waitbar' ]));
       wb  = waitbar(0, [ mfilename ': Stacking ' num2str(nbtostack) ' images (close to abort)...' ]); 
       set(wb, 'Tag', [ mfilename '_waitbar' ]);
       t0 = clock; stackedimages = 0;
       disp([ mfilename ':   Stacking ' num2str(nbtostack) ' images... ' datestr(now) ])
       
+      % and stack all images on the reference
       for index=1:numel(self.images)
         this_img = self.images(index);
         this_img.translation = [ 0 ; 0 ];
         this_img.rotation    = 0;
         
-        if isempty(this_img.type) || strcmp('light', this_img.type)
+        if isempty(this_img.type) || strcmp('light', this_img.type) || strcmp('reference', this_img.type)
           stackedimages= stackedimages+1;
-          % check for the reference
-          if ~self.reference || self.reference == index
-            continue; 
-          end
           
           if ~ishandle(wb)
             disp('Stack: Aborting (user closed the waitbar).')
@@ -565,7 +537,11 @@ classdef mastrostack < handle
           this_img.translation = ret_t(:);
           
           % we read the image and transform it
-          [im,M]     = imaffine(im, ret_R, ret_t);
+          if any(ret_t) && any(theta)
+            [im,M]     = imaffine(im, ret_R, ret_t);
+          else
+            M = 1;
+          end
           self.lightN= self.lightN+M;
           clear M
           self.light = self.light + imdouble(im); % add rotated/translated image on the reference
@@ -613,7 +589,7 @@ classdef mastrostack < handle
       image(self.light); 
       title([ mfilename ': Stacked image. Exposure=' num2str(ExposureTime) ' [s]' ]);
       % write stacked file
-      this_img = self.images(self.reference);
+      this_img = self.reference;
       this_img.exif.ExposureTime = ExposureTime;
       if isempty(filename)
         if ischar(this_img.source)
@@ -1098,13 +1074,9 @@ function MenuCallback(src, evnt, self)
   case {'R','Mark as Reference image'}  % Reference
     if ~isempty(self.currentImage) && ...
       numel(self.images) >= self.currentImage && self.currentImage > 0
-      if self.reference && self.reference ~= self.currentImage;
-        self.images(self.reference).type = 'light';
-        disp([ mfilename ': image ' self.images(self.reference).id ' set as LIGHT (was REFERENCE)' ]);
+      if isstruct(self.reference) && self.reference.index ~= self.currentImage;
+        [~,self] = get_reference(self, self.currentImage);  % SET
       end
-      self.images(self.currentImage).type = 'reference';
-      self.reference = self.currentImage;
-      disp([ mfilename ': image ' self.images(self.currentImage).id ' set as REFERENCE' ]);
       title([ self.images(self.currentImage).id ...
           ' ' self.images(self.currentImage).type ]);
     end
@@ -1197,12 +1169,8 @@ function MenuCallback(src, evnt, self)
     selection = listdlg(self, 'select image(s) to clear');
     if isempty(selection), return; end
     self.images(selection) = [];
-    self.reference    = 0;
-    for index=1:numel(self.images)
-      self.images(index).index = index;
-      if strcmp(self.images(index).type, 'reference')
-        self.reference = index;
-      end    
+    if any(selection == self.reference.index)
+      self.reference    = [];
     end
     self.currentImage = 0;
   case 'Clear skipped image(s)'
@@ -1290,7 +1258,7 @@ function MenuCallback(src, evnt, self)
       subplot(m,n,9); c0='rgbkcm';
       for index=1:numel(self.images)
         t = self.images(index).type;
-        if isempty(t) || strcmp(t, 'light')
+        if isempty(t) || strcmp(t, 'light') || strcmp(t, 'reference')
           x =self.images(index).points.x;        y =self.images(index).points.y; 
           sx=self.images(index).points.sx;
           x0=self.images(index).image_size(1)/2; y0=self.images(index).image_size(2)/2;
@@ -1312,9 +1280,8 @@ function MenuCallback(src, evnt, self)
         'Save master Flat',  'Save current image' }
     exif = []; im = [];
     if strfind(action, 'stacked')
-      if self.reference
-        this_img = self.images(self.reference);
-        exif     = this_img.exif;
+      if isstruct(self.reference)
+        exif     = self.reference.exif;
       end
       im       = self.light;
     elseif strfind(action, 'Dark')
