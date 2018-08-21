@@ -36,6 +36,7 @@ function [s,f,m] = peakwidth(im, x0, dx)
   X  = X(X>=1 & X<=size(im1,1));
   Y  = Y(Y>=1 & Y<=size(im1,2));
   if isempty(X) || isempty(Y), return; end
+  if any(~isfinite(x0)), return; end
   
   % determine centroid and width (gaussian)
   im2=double(im1(X,Y));
@@ -46,7 +47,7 @@ function [s,f,m] = peakwidth(im, x0, dx)
   s  = sqrt(numel(is)/pi); % area is pi*r^2
   s  = [ s s ];
   f  = [ f1 f2 ];
-  if im1(x0(1), x0(2))*.8 > im1(round(f(1)), round(f(2))), f = x0; end
+  if any(~isfinite(f)) || im1(x0(1), x0(2))*.8 > im1(round(f(1)), round(f(2))), f = x0; end
   % s = [ s1 s2 ];
   
 end % peakwidth

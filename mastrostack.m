@@ -542,10 +542,11 @@ classdef mastrostack < handle
           else
             M = 1;
           end
-          self.lightN= self.lightN+M;
-          clear M
           self.light = self.light + imdouble(im); % add rotated/translated image on the reference
           clear im
+          self.lightN= self.lightN+M;
+          clear M
+          
           
           % sum-up exposure
           if isfield(this_img.exif, 'ExposureTime')
