@@ -1,7 +1,9 @@
-function filename = write_stacked(im, filename, info)
+function filename = write_stacked(im, filename, info, binning)
   % we create a cell with PNG options for imwrite
     % clean the EXIF
     if nargin < 3, info = struct(); end
+    if nargin < 4, binning = false; end
+    
     f = fieldnames(info);
     for index=1:numel(f)
       if isfield(info, f{index})
@@ -61,6 +63,14 @@ function filename = write_stacked(im, filename, info)
       'Software', info.Software , ...
       'Source', [ info.Model ' ' info.Make ] , ...
       'Comment', desc };
+    
+    % apply 2x2 binning when set
+    if binning
+      disp([ mfilename ': using 2x2 binning for ' filename ])
+      im = im(1:2:end, 1:2:end, :) + im(1:2:end, 2:2:end, :) ...
+         + im(2:2:end, 1:2:end, :) + im(2:2:end, 2:2:end, :);
+    end
+    
     % writing stacked image
     disp([ mfilename ': writing ' filename ])
     warning('off','MATLAB:writepng:changedTextChunk')

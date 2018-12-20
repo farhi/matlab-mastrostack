@@ -142,6 +142,7 @@ classdef mastrostack < handle
     deadPixelArea         = 9;
     removeHotPixels       = 1;
     extendImage           = 0;
+    binning               = false;
     reference             = [];   % by default the first 'light' image
     
     images = [];
@@ -418,43 +419,51 @@ classdef mastrostack < handle
       
     end % getflat
 
-    function im = correct(self, im, cl)
+    function im = correct(self, im, cl, typ)
       % correct: correct an image for vignetting and background
       %
-      % correct(self, im)
+      % correct(self, im, cl, typ)
       %   divide the image by the flat, and subtract the dark
-      %   'im' is a MxN or MxNx3 matrix, from e.g. imread
+      %
+      % input:
+      %   im:   MxN or MxNx3 matrix, from e.g. imread
+      %   cl:   image class, e.g. 'unit16'. default is 'im' class.
+      %   typ:  type of image, e.g. 'light' (default),'flat', or 'dark'
       if nargin < 2, return; end
-      if nargin < 3
-        cl = class(im); % we shall then cast back
-      end
-      
       if isempty(im), return; end
+      
+      if nargin < 3, cl = ''; end
+      if isempty(cl),cl = class(im); end % we shall then cast back
+      if nargin < 4,   typ = ''; end
+      if isempty(typ), typ='light'; end
+      
       im = im2uint(im, 'uint16');
       
       % remove hot spots. These have a single channel (RGB) higher than 2e4
       % and the others are lower than 1100. This is arbitrary, but usual.
-      if size(im,3) == 3
-        h = uint16(20000);
-        l = uint16(1100);
-        index=find( ...
-          (im(:,:,1) > h & im(:,:,2) + im(:,:,3) < l) | ...
-          (im(:,:,2) > h & im(:,:,3) + im(:,:,1) < l) | ...
-          (im(:,:,3) > h & im(:,:,1) + im(:,:,2) < l) );
-        for layer=1:size(im,3)
-          l           = im(:,:,layer);
-          l(index)    = 0;     % to dark 
-          im(:,:,layer) = l;
+      if ~strcmp(typ, 'dark')
+        if size(im,3) == 3
+          h = uint16(20000);
+          l = uint16(1100);
+          index=find( ...
+            (im(:,:,1) > h & im(:,:,2) + im(:,:,3) < l) | ...
+            (im(:,:,2) > h & im(:,:,3) + im(:,:,1) < l) | ...
+            (im(:,:,3) > h & im(:,:,1) + im(:,:,2) < l) );
+          for layer=1:size(im,3)
+            l           = im(:,:,layer);
+            l(index)    = 0;     % to dark 
+            im(:,:,layer) = l;
+          end
         end
       end
       
       % correct for read-out/sensor noise (subtract)
-      if ~isempty(self.dark) && ~isscalar(self.dark) && ndims(self.dark) == 3
+      if ~isempty(self.dark) && ~isscalar(self.dark) && ndims(self.dark) == 3 && ~strcmp(typ, 'dark')
         im = im - self.dark; % dark is a uint16
       end
       
       % correct for flat field to compensate vignetting (divide)
-      if ~isempty(self.flat) && ~isscalar(self.flat)
+      if ~isempty(self.flat) && ~isscalar(self.flat) && ~strcmp(typ, 'flat') && ~strcmp(typ, 'dark')
         for l=1:size(im,3)
           im(:,:,l) = im2uint(imdouble(im(:,:,l))./double(self.flat),'uint16');
         end
@@ -598,7 +607,7 @@ classdef mastrostack < handle
         else p = pwd; end
         filename = fullfile(p, [ this_img.id '_stacked.png' ]);
       end
-      write_stacked(self.light, filename, this_img.exif);
+      write_stacked(self.light, filename, this_img.exif, self.binning);
       disp([ mfilename ': Stacking DONE. Elapsed time ' num2str(etime(clock, t0)) ' [s] ' datestr(now) ])
       if nargout
         im        = self.light;
@@ -683,7 +692,15 @@ classdef mastrostack < handle
       for index=1:numel(img)
         this_img = img(index);
         
-        % get the image
+        % get the image. Not for dark and light images.
+        if isscalar(this_img)
+          typ = self.images(this_img).type;
+        elseif isstruct(this_img)
+          typ = this_img.type;
+        else typ = ''; end
+        if strcmp(typ, 'dark') || strcmp(typ, 'flat')
+          continue;
+        end
         [~, this_img]  = imread(self, this_img, 0);
 
         if ~isfield(this_img.points,'x') || isempty(this_img.points.x)
@@ -1142,13 +1159,18 @@ function MenuCallback(src, evnt, self)
       numel(self.images) >= self.currentImage && self.currentImage > 0
         plot(self, self.currentImage);
     end
+  case 'Use 2x2 binning'
+    status = get(src, 'Checked');
+    if strcmp(status,'on'), status = 'off'; else status = 'on'; end
+    set(src, 'Checked',status, 'Tag','Binning');
+    if status, self.binning = true; else self.binning=false; end
   case 'Compute master Dark'
     self.dark = [];
     image(self.getdark);
     title('Master Dark')
   case 'Compute master Flat'
     self.flat = [];
-    im = im2uint(self.getflat,'uint16');
+    im = im2uint(1-self.getflat,'uint16');
     image(im);
     title([ 'Master Flat ' mat2str([ min(im(:)) max(im(:)) ]) ]);
   case {'Stack', 'Stack (and Align if needed)' }
@@ -1308,7 +1330,7 @@ function MenuCallback(src, evnt, self)
     filename = fullfile(pathname, filename);
     
     exif.Comment = action;
-    write_stacked(im, filename, exif);
+    write_stacked(im, filename, exif, self.binning);
     disp([ mfilename ': ' action ' as ' filename ])
   otherwise
     disp([ mfilename ': unknown action ' action ])
@@ -1364,6 +1386,8 @@ function fig = build_interface(self)
       'Callback', {@MenuCallback, self });
     uimenu(m, 'Label', 'Show in log scale',        ...
       'Callback', {@MenuCallback, self }, 'Tag', 'LogScale');
+    uimenu(m, 'Label', 'Use 2x2 binning',        ...
+      'Callback', {@MenuCallback, self }, 'Tag', 'Binning');
     uimenu(m, 'Label', 'Goto image...', 'Separator','on',    ...
       'Callback', {@MenuCallback, self });
     uimenu(m, 'Label', 'Next image',       ...
