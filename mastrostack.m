@@ -693,10 +693,10 @@ classdef mastrostack < handle
         this_img = img(index);
         
         % get the image. Not for dark and light images.
-        if isscalar(this_img)
-          typ = self.images(this_img).type;
-        elseif isstruct(this_img)
+        if isstruct(this_img)
           typ = this_img.type;
+        elseif isscalar(this_img)
+          typ = self.images(this_img).type;
         else typ = ''; end
         if strcmp(typ, 'dark') || strcmp(typ, 'flat')
           continue;
@@ -1192,7 +1192,7 @@ function MenuCallback(src, evnt, self)
     selection = listdlg(self, 'select image(s) to clear');
     if isempty(selection), return; end
     self.images(selection) = [];
-    if any(selection == self.reference.index)
+    if isstruct(self.reference) && any(selection == self.reference.index)
       self.reference    = [];
     end
     self.currentImage = 0;
