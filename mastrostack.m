@@ -588,6 +588,7 @@ classdef mastrostack < handle
         self.images(index) = this_img;
       end % for
       
+      beep;
       disp([ mfilename ': Total exposure on stacked image: ' num2str(ExposureTime) ' [s]' ]);
       delete(findall(0, 'Tag', [ mfilename '_waitbar' ]));
       for index=1:size(self.light,3)
@@ -754,6 +755,7 @@ classdef mastrostack < handle
       if numel(img) > 1 && ~isempty(wb)
         delete(findall(0, 'Tag', [ mfilename '_waitbar' ]));
         disp([ mfilename ':   Alignment done ' datestr(now) ])
+        beep;
       end
       
     end % cpselect
