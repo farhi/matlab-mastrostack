@@ -71,8 +71,8 @@ function [ret_t, ret_R, theta] = imdiff(self, img1, img2)
       elseif theta > 90 && theta2-theta1 < -90
         theta = theta - 360;
       end
-      if abs(theta-(theta2-theta1)) > tol_rot
-        disp([ mfilename ': WARNING: invalid affine rotation delta_theta=' num2str([theta theta2-theta1]) '. Skipping.']);
+      if abs(theta-(theta1-theta2)) > tol_rot
+        disp([ mfilename ': WARNING: invalid affine rotation delta_theta=' num2str([theta theta1-theta2]) '. Skipping.']);
         ret_t = [];
         return
       end

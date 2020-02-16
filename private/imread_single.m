@@ -89,7 +89,13 @@ function [im, img, exif] = imread_single(source, images, flag)
   if ~isstruct(img)
     % create the img structure holding information and EXIF
     img.index       = numel(images)+1;
-    [~,img.id]      = fileparts(exif.Filename);
+    if isfield(exif, 'Filename')
+      [~,img.id]      = fileparts(exif.Filename);
+    else
+      disp([ mfilename ': Skipping ' source ' (imread/dcraw error - not an image ?)' ]);
+      im = []; img = []; exif = [];
+      return
+    end
     img.source      = source;
     img.image       = []; % we do not store the images. Many will be huge.
     img.exif        = exif;
